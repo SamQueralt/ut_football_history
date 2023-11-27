@@ -9,6 +9,21 @@ st.set_page_config(layout="wide")
 master_stats = pd.read_csv("master_stats_test.csv")
 master_stats[['Year', 'Month', 'Day']] = master_stats['Date'].str.split('-', expand=True)
 
+# simple col names
+simple_mapping = {'First Name': 'First',
+                  'Last Name': 'Last',
+                  'Interceptions': 'Int',
+                  'Pass Yards': 'Pass Yds',
+                  'Passing TDs': 'Pass TDs',
+                  'Rush Attempts': 'Rsh',
+                  'Net Rush Yards': 'Rush Yds',
+                  'Yards Per Rush': 'YPR',
+                  'Catches': 'Rec',
+                  'Receiving Yards': 'Rec Yds',
+                  'Receiving TDs': 'Rec TDs',
+                  'Home Team': 'Home',
+                  'Away Team': 'Away'}
+
 # Colunms
 col1, col3, col4 = st.columns([2,1,8])
 
@@ -57,8 +72,9 @@ with col4:
         filtered_stats.set_index([''], inplace=True)
 
         if simple == True:
-            filtered_stats['Cmp-Att'] = filtered_stats.apply(lambda row: '-'.join(str(int(val)) for val in row[['Completions', 'Pass Attempts']] if pd.notna(val)), axis=1)
-            filtered_stats = filtered_stats[['Cmp-Att', 'Interceptions', 'Pass Yards', 'Passing TDs', 'Rush Attempts', 'Net Rush Yards', 'Rushing TDs', 'Yards Per Rush', 'Catches', 'Receiving Yards', 'Receiving TDs', 'Date', 'Link']]
+            filtered_stats['Cmp/Att'] = filtered_stats.apply(lambda row: '/'.join(str(int(val)) for val in row[['Completions', 'Pass Attempts']] if pd.notna(val)), axis=1)
+            filtered_stats = filtered_stats[['Cmp/Att', 'Interceptions', 'Pass Yards', 'Passing TDs', 'Rush Attempts', 'Net Rush Yards', 'Rushing TDs', 'Yards Per Rush', 'Catches', 'Receiving Yards', 'Receiving TDs', 'Date', 'Link']]
+            filtered_stats.rename(columns = simple_mapping, inplace = True)
 
     else:
         filtered_stats = filtered_stats[master_stats['Last Name'] != 'Game']
@@ -66,8 +82,9 @@ with col4:
         filtered_stats.set_index(['First Name', 'Last Name'], inplace=True)
 
         if simple == True:
-            filtered_stats['Cmp-Att'] = filtered_stats.apply(lambda row: '-'.join(str(int(val)) for val in row[['Completions', 'Pass Attempts']] if pd.notna(val)), axis=1)
-            filtered_stats = filtered_stats[['Cmp-Att', 'Interceptions', 'Pass Yards', 'Passing TDs', 'Rush Attempts', 'Net Rush Yards', 'Rushing TDs', 'Yards Per Rush', 'Catches', 'Receiving Yards', 'Receiving TDs', 'Date', 'Home Team', 'Away Team', 'Home Score', 'Away Score', 'Texas Result', 'Link']]
+            filtered_stats['Cmp/Att'] = filtered_stats.apply(lambda row: '/'.join(str(int(val)) for val in row[['Completions', 'Pass Attempts']] if pd.notna(val)), axis=1)
+            filtered_stats = filtered_stats[['Cmp/Att', 'Interceptions', 'Pass Yards', 'Passing TDs', 'Rush Attempts', 'Net Rush Yards', 'Rushing TDs', 'Yards Per Rush', 'Catches', 'Receiving Yards', 'Receiving TDs', 'Date', 'Home Team', 'Away Team', 'Home Score', 'Away Score', 'Texas Result', 'Link']]
+            filtered_stats.rename(columns = simple_mapping, inplace = True)
 
     st.dataframe(filtered_stats)
 
