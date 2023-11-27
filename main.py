@@ -4,7 +4,15 @@
 # Import convention
 import streamlit as st
 import pandas as pd
-st.set_page_config(layout="wide")
+st.set_page_config(
+    page_title = "UT Football Box Score History",
+    page_icon = "🤘",
+    layout = "wide",
+    # background_color="#bf5700",  
+)
+
+
+st.title("UT Football Box Score History", anchor = None)
 
 master_stats = pd.read_csv("master_stats_test.csv")
 master_stats[['Year', 'Month', 'Day']] = master_stats['Date'].str.split('-', expand=True)
