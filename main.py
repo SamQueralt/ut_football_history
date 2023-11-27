@@ -9,24 +9,6 @@ st.set_page_config(layout="wide")
 master_stats = pd.read_csv("master_stats_test.csv")
 master_stats[['Year', 'Month', 'Day']] = master_stats['Date'].str.split('-', expand=True)
 
-# 
-# 
-# 
-# print(master_stats)
-# 
-# st.dataframe(master_stats)
-
-# st.button('Hit me')
-# st.data_editor('Edit data', master_stats)
-# st.checkbox('Check me out')
-# st.radio('Pick one:', ['nose','ear'])
-# st.selectbox('Select', [1,2,3])
-# st.multiselect('Multiselect', [1,2,3])
-# st.slider('Slide me', min_value=0, max_value=10)
-# st.select_slider('Slide to select', options=[1,'2'])
-# st.text_input('Enter some text')
-# st.number_input('number input', step = 1)
-
 # Colunms
 col1, col3, col4 = st.columns([2,1,8])
 
