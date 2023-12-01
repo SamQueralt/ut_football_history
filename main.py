@@ -37,6 +37,7 @@ col1, col3, col4 = st.columns([2,1,8])
 
 # filters for yards
 with col1:
+    last_name = st.text_input("Last")
     min_pass_yards = st.number_input('Min Pass Yds', step = 1, min_value = 0, value = 0)
     min_rush_yards = st.number_input('Min Rush Yds', step = 1, min_value = 0, value = 0)
     min_rec_yards = st.number_input('Min Rec Yds', step = 1, min_value = 0, value = 0)
@@ -53,6 +54,7 @@ with col1:
 
 # filters for TDs
 with col3:
+    first_name = st.text_input("First")
     min_pass_TDs = st.number_input('Min Pass TDs', step = 1, min_value = 0, value = 0)
     min_rush_TDs = st.number_input('Min Rush TDs', step = 1, min_value = 0, value = 0)
     min_rec_TDs = st.number_input('Min Rec TDs', step = 1, min_value = 0, value = 0)
@@ -87,6 +89,8 @@ with col4:
     else:
         filtered_stats = filtered_stats[master_stats['Last Name'] != 'Game']
         filtered_stats.sort_values(by='Last Name', inplace=True)
+        filtered_stats = filtered_stats[filtered_stats['First Name'].str.contains(first_name, na = False)]
+        filtered_stats = filtered_stats[filtered_stats['Last Name'].str.contains(last_name, na = False)]
         filtered_stats.set_index(['First Name', 'Last Name'], inplace=True)
 
         if simple == True:
@@ -98,3 +102,8 @@ with col4:
 
     st.download_button('Download Full Data (CSV)', data = master_stats.to_csv(index = False), file_name = "texas_fb_history.csv", key = 'download_full')
     st.download_button('Download Filtered Data (CSV)', data = filtered_stats.to_csv(index = False), file_name = "texas_fb_history_filtered.csv", key = 'download_filtered')
+
+st.text('Note: Some players names have typos in the official stat sheets and may not show up in name based queries.')
+st.text('Also, stats have not been rigorously validated, so this is an UNOFFICIAL data set.')
+st.text('All the stats here should be accurate, but I could be missing some games it\'s hard to be 100% sure')
+st.text('MISSING GAMES: KANSAS 2009, NEBRASKA 2009; ALL OF THE 2008 SEASON (they\'ll be added soon I just have to do it manually)')
