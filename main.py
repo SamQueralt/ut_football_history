@@ -106,4 +106,4 @@ with col4:
 st.text('Note: Some players names have typos in the official stat sheets and may not show up in name based queries.')
 st.text('Also, stats have not been rigorously validated, so this is an UNOFFICIAL data set.')
 st.text('All the stats here should be accurate, but I could be missing some games it\'s hard to be 100% sure')
-st.text('MISSING GAMES: KANSAS 2009, NEBRASKA 2009; ALL OF THE 2008 SEASON (they\'ll be added soon I just have to do it manually)')
+st.text('MISSING GAMES: KANSAS 2009, NEBRASKA 2009, KANSAS 2016, UTEP 2016; ALL OF THE 2008 SEASON (they\'ll be added soon I just have to do it manually)')
