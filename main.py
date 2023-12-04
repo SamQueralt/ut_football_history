@@ -28,9 +28,10 @@ simple_mapping = {'First Name': 'First',
                   'Yards Per Rush': 'YPR',
                   'Catches': 'Rec',
                   'Receiving Yards': 'Rec Yds',
-                  'Receiving TDs': 'Rec TDs',
-                  'Home Team': 'Home',
-                  'Away Team': 'Away'}
+                  'Receiving TDs': 'Rec TDs',}
+
+name_mapping = {'Home Team': 'Home', 
+                'Away Team': 'Away'}
 
 # Colunms
 col1, col3, col4 = st.columns([2,1,8])
@@ -94,6 +95,7 @@ with col4:
         filtered_stats.sort_values(by='Last Name', inplace=True)
         filtered_stats = filtered_stats[filtered_stats['First Name'].str.contains(first_name, na = False)]
         filtered_stats = filtered_stats[filtered_stats['Last Name'].str.contains(last_name, na = False)]
+        filtered_stats.rename(columns = name_mapping, inplace = True)
         filtered_stats.set_index(['First Name', 'Last Name'], inplace=True)
 
         if simple == True:
