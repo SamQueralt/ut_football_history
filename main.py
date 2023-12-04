@@ -38,9 +38,9 @@ col1, col3, col4 = st.columns([2,1,8])
 # filters for yards
 with col1:
     last_name = st.text_input("Last")
-    min_pass_yards = st.number_input('Min Pass Yds', step = 1, min_value = 0, value = 0)
-    min_rush_yards = st.number_input('Min Rush Yds', step = 1, min_value = 0, value = 0)
-    min_rec_yards = st.number_input('Min Rec Yds', step = 1, min_value = 0, value = 0)
+    min_pass_yards = st.number_input('Min Pass Yds', step = 1, min_value = 0, value = None)
+    min_rush_yards = st.number_input('Min Rush Yds', step = 1, min_value = 0, value = None)
+    min_rec_yards = st.number_input('Min Rec Yds', step = 1, min_value = 0, value = None)
     year = st.number_input('Year', step = 1, min_value = 1947, max_value = 2040, value = None)
     totals = st.checkbox('Show Full Game Totals', value = True)
     simple = st.checkbox('Simple View', value = True)
@@ -59,18 +59,21 @@ with col3:
     min_rush_TDs = st.number_input('Min Rush TDs', step = 1, min_value = 0, value = 0)
     min_rec_TDs = st.number_input('Min Rec TDs', step = 1, min_value = 0, value = 0)
     
-
 # column for dataset
 with col4:
     filtered_stats = master_stats
-   
-    filtered_stats = filtered_stats[(filtered_stats['Pass Yards'] >= min_pass_yards) & 
-                                    (filtered_stats['Net Rush Yards'] >= min_rush_yards) & 
-                                    (filtered_stats['Receiving Yards'] >= min_rec_yards) & 
-                                    (filtered_stats['Passing TDs'] >= min_pass_TDs) & 
+    
+    if min_pass_yards != None:
+        filtered_stats = filtered_stats[filtered_stats['Pass Yards'] >= min_pass_yards]
+    if min_rush_yards != None:
+        filtered_stats = filtered_stats[filtered_stats['Net Rush Yards'] >= min_rush_yards]
+    if min_rec_yards != None:
+        filtered_stats = filtered_stats[filtered_stats['Receiving Yards'] >= min_rec_yards]
+    
+    filtered_stats = filtered_stats[(filtered_stats['Passing TDs'] >= min_pass_TDs) & 
                                     (filtered_stats['Rushing TDs'] >= min_rush_TDs) & 
                                     (filtered_stats['Receiving TDs'] >= min_rec_TDs)]
-    
+
     if year != None:
         filtered_stats = filtered_stats[filtered_stats['Year'] == str(year)]
 
@@ -106,4 +109,4 @@ with col4:
 st.text('Note: Some players names have typos in the official stat sheets and may not show up in name based queries.')
 st.text('Also, stats have not been rigorously validated, so this is an UNOFFICIAL data set.')
 st.text('All the stats here should be accurate, but I could be missing some games it\'s hard to be 100% sure')
-st.text('MISSING GAMES: KANSAS 2009, NEBRASKA 2009, KANSAS 2016, UTEP 2016; ALL OF THE 2008 SEASON (they\'ll be added soon I just have to do it manually)')
+st.text('MISSING GAMES: KANSAS 2009, NEBRASKA 2009; ALL OF THE 2008 SEASON (they\'ll be added soon I just have to do it manually)')
