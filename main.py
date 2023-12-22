@@ -89,7 +89,7 @@ with col4:
 
         if simple == True:
             filtered_stats['Cmp/Att'] = filtered_stats.apply(lambda row: '/'.join(str(int(val)) for val in row[['Completions', 'Pass Attempts']] if pd.notna(val)), axis=1)
-            filtered_stats = filtered_stats[['Cmp/Att', 'Interceptions', 'Pass Yards', 'Passing TDs', 'Rush Attempts', 'Net Rush Yards', 'Rushing TDs', 'Yards Per Rush', 'Catches', 'Receiving Yards', 'Receiving TDs', 'Date', 'Link']]
+            filtered_stats = filtered_stats[['Cmp/Att', 'Interceptions', 'Pass Yards', 'Passing TDs', 'Rush Attempts', 'Net Rush Yards', 'Rushing TDs', 'Yards Per Rush', 'Catches', 'Receiving Yards', 'Receiving TDs', 'Date', 'Home Team', 'Away Team', 'Home Score', 'Away Score', 'Texas Result', 'Link']]
             filtered_stats.rename(columns = simple_mapping, inplace = True)
 
     else:
@@ -113,4 +113,3 @@ with col4:
 st.text('Note: Some players names have typos in the official stat sheets and may not show up in name based queries.')
 st.text('Also, stats have not been rigorously validated, so this is an UNOFFICIAL data set.')
 st.text('All the stats here should be accurate, but I could be missing some games it\'s hard to be 100% sure')
-st.text('MISSING GAMES: KANSAS 2009, NEBRASKA 2009; ALL OF THE 2008 SEASON (they\'ll be added soon I just have to do it manually)')
