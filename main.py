@@ -14,7 +14,7 @@ st.set_page_config(
 
 st.title("UT Football Box Score History", anchor = None)
 
-master_stats = pd.read_csv("master_stats_test.csv")
+master_stats = pd.read_csv("master_stats_final.csv")
 master_stats[['Year', 'Month', 'Day']] = master_stats['Date'].str.split('-', expand=True)
 
 # simple col names
