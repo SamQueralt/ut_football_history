@@ -113,4 +113,4 @@ with col4:
 st.text('Note: Some players names have typos in the official stat sheets and may not show up in name based queries.')
 st.text('Also, stats have not been rigorously validated, so this is an UNOFFICIAL data set.')
 st.text('All the stats here should be accurate, but I could be missing some games it\'s hard to be 100% sure')
-st.text('2023 will not be included until the season is posted at this link: https://texassports.com/sports/2013/7/21/FB_0721134841.aspx')
+st.text('Stats will not be updated until the most recent season is posted at this link: https://texassports.com/sports/2013/7/21/FB_0721134841.aspx')
