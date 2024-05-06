@@ -114,4 +114,8 @@ st.text('Note: Some players names have typos in the official stat sheets and may
 st.text('Also, stats have not been rigorously validated, so this is an UNOFFICIAL data set.')
 st.text('All the stats here should be accurate, but I could be missing some games it\'s hard to be 100% sure')
 st.text('Stats will not be updated until the most recent season is posted at this link: https://texassports.com/sports/2013/7/21/FB_0721134841.aspx')
-st.text('Defensive stats are on the way. Prepare for some weird names because the stats cut them off for some reason.')
+st.text('Defensive stats are on the way. Prepare for some weird names because the early box score pages cut them off for spacing reasons.')
+
+# notes on defense
+### early names cut off due to spacing
+### some years count assisted tackles as .5 while some count them at 1
