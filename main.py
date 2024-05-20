@@ -1,4 +1,31 @@
-# main file for website
+import streamlit as st
+
+def main():
+    st.title("Main Page")
+    st.write("Welcome to the main page!")
+
+def page1():
+    st.title("Page 1")
+    st.write("Welcome to page 1!")
+
+def page2():
+    st.title("Page 2")
+    st.write("Welcome to page 2!")
+
+PAGES = {
+    "Main": main,
+    "Page 1": page1,
+    "Page 2": page2
+}
+
+st.sidebar.title('Navigation')
+selection = st.sidebar.radio("Go to", list(PAGES.keys()))
+
+page = PAGES[selection]
+page()
+
+
+'''# main file for website
 
 # to test: streamlit run c:/Code/ut_football_history/main.py
 # Import convention
@@ -118,4 +145,4 @@ st.text('Defensive stats are on the way. Prepare for some weird names because th
 
 # notes on defense
 ### early names cut off due to spacing
-### some years count assisted tackles as .5 while some count them at 1
+### some years count assisted tackles as .5 while some count them at 1'''
