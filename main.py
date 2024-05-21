@@ -1,11 +1,11 @@
 import streamlit as st
 import pandas as pd
-# st.set_page_config(
-#     page_title = "UT Football Box Score History",
-#     page_icon = "🤘",
-#     layout = "wide",
-#     # background_color="#bf5700",  
-# )
+st.set_page_config(
+    page_title = "UT Football Box Score History",
+    page_icon = "🤘",
+    layout = "wide",
+    # background_color="#bf5700",  
+)
 
 master_offense = pd.read_csv('master_stats_final.csv')
 player_stats = master_offense.dropna(subset='First Name')
