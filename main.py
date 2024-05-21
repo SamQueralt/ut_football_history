@@ -1,14 +1,12 @@
 import streamlit as st
+st.set_page_config(
+    page_title = "UT Football Box Score History",
+    page_icon = "🤘",
+    layout = "wide",
+    # background_color="#bf5700",  
+)
 
 def main():
-    st.set_page_config(
-        page_title = "UT Football Box Score History",
-        page_icon = "🤘",
-        layout = "wide",
-        # background_color="#bf5700",  
-    )
-
-
     st.title("UT Football Box Score History", anchor = None)
 
     master_stats = pd.read_csv("master_stats_final.csv")
