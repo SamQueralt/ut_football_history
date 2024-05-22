@@ -154,71 +154,75 @@ def search():
         else:
             option = 0
 
-        temp_df = master_offense[master_offense['PlayerID'] == name_dict[option]].reset_index()
-        sums = career_stats(temp_df)
+        if option > 0:
+            temp_df = master_offense[master_offense['PlayerID'] == name_dict[option]].reset_index()
+            sums = career_stats(temp_df)
 
-        st.write('Career Stats:')
+            st.write('Career Stats:')
 
-        if sums['Pass Attempts'] > 0:
-            if sums['Pass Yards'] == 1:
-                temp1 = "1 yard"
-            else:
-                temp1 = f"{int(sums['Pass Yards'])} yards"
+            if sums['Pass Attempts'] > 0:
+                if sums['Pass Yards'] == 1:
+                    temp1 = "1 yard"
+                else:
+                    temp1 = f"{int(sums['Pass Yards'])} yards"
 
-            if sums['Passing TDs'] == 1:
-                temp2 = "1 TD"
-            else:
-                temp2 = f"{int(sums['Passing TDs'])} TDs"
+                if sums['Passing TDs'] == 1:
+                    temp2 = "1 TD"
+                else:
+                    temp2 = f"{int(sums['Passing TDs'])} TDs"
+                
+                if sums['Interceptions'] == 1:
+                    temp3 = "1 Int"
+                else:
+                    temp3 = f"{int(sums['Interceptions'])} Ints"
+
+                perc = 100 * round(sums['Completions'] / sums['Pass Attempts'], 2)
+
+                st.caption("Passing")
+                st.code(f"{int(sums['Completions'])}/{int(sums['Pass Attempts'])} - {perc:.1f} %\n{temp1}\n{temp2}\n{temp3}")
             
-            if sums['Interceptions'] == 1:
-                temp3 = "1 Int"
+            if sums['Rush Attempts'] > 0:
+                if sums['Rush Attempts'] == 1:
+                    temp1 = "1 rush"
+                else:
+                    temp1 = f"{int(sums['Rush Attempts'])} rushes"
+
+                if sums['Net Rush Yards'] == 1:
+                    temp2 = "1 yard"
+                else:
+                    temp2 = f"{int(sums['Net Rush Yards'])} yards"
+
+                if sums['Rushing TDs'] == 1:
+                    temp3 = "1 TD"
+                else:
+                    temp3 = f"{int(sums['Rushing TDs'])} TDs"
+
+                perc = round(sums['Net Rush Yards'] / sums['Rush Attempts'], 1)
+
+                st.caption("Rushing")
+                st.code(f"{temp1}\n{temp2}\n{perc} YPC\n{temp3}")
+
+            if sums['Catches'] > 0:
+                if sums['Catches'] == 1:
+                    temp1 = "1 reception"
+                else:
+                    temp1 = f"{int(sums['Catches'])} receptions"
+
+                if sums['Receiving Yards'] == 1:
+                    temp2 = "1 yard"
+                else:
+                    temp2 = f"{int(sums['Receiving Yards'])} yards"
+
+                if sums['Receiving TDs'] == 1:
+                    temp3 = "1 TD"
+                else:
+                    temp3 = f"{int(sums['Receiving TDs'])} TDs"
+
+                st.caption('Receiving')
+                st.code(f"{temp1}\n{temp2}\n{temp3}")
             else:
-                temp3 = f"{int(sums['Interceptions'])} Ints"
-
-            perc = 100 * round(sums['Completions'] / sums['Pass Attempts'], 2)
-
-            st.caption("Passing")
-            st.code(f"{int(sums['Completions'])}/{int(sums['Pass Attempts'])} - {perc:.1f} %\n{temp1}\n{temp2}\n{temp3}")
-        
-        if sums['Rush Attempts'] > 0:
-            if sums['Rush Attempts'] == 1:
-                temp1 = "1 rush"
-            else:
-                temp1 = f"{int(sums['Rush Attempts'])} rushes"
-
-            if sums['Net Rush Yards'] == 1:
-                temp2 = "1 yard"
-            else:
-                temp2 = f"{int(sums['Net Rush Yards'])} yards"
-
-            if sums['Rushing TDs'] == 1:
-                temp3 = "1 TD"
-            else:
-                temp3 = f"{int(sums['Rushing TDs'])} TDs"
-
-            perc = round(sums['Net Rush Yards'] / sums['Rush Attempts'], 1)
-
-            st.caption("Rushing")
-            st.code(f"{temp1}\n{temp2}\n{perc} YPC\n{temp3}")
-
-        if sums['Catches'] > 0:
-            if sums['Catches'] == 1:
-                temp1 = "1 reception"
-            else:
-                temp1 = f"{int(sums['Catches'])} receptions"
-
-            if sums['Receiving Yards'] == 1:
-                temp2 = "1 yard"
-            else:
-                temp2 = f"{int(sums['Receiving Yards'])} yards"
-
-            if sums['Receiving TDs'] == 1:
-                temp3 = "1 TD"
-            else:
-                temp3 = f"{int(sums['Receiving TDs'])} TDs"
-
-            st.caption('Receiving')
-            st.code(f"{temp1}\n{temp2}\n{temp3}")
+                # for full texas history
+                pass
 
     with col2:
         if option == 0:
