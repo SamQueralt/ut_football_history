@@ -28,6 +28,10 @@ def filter_list(query, data):
     else:
         return data
 
+def career_stats(df):
+    numeric_sums = df.select_dtypes(include='number').sum(axis=0)
+    return numeric_sums
+
 # Define the page functions
 def main():
     st.title("UT Football Box Score History", anchor = None)
@@ -135,9 +139,7 @@ def main():
     st.text('Defensive stats are on the way. Prepare for some weird names because the early box score pages cut them off for spacing reasons.')
     
 
-def search():
-    st.title("Player Search")
-    
+def search():    
     col1, col2 = st.columns([2,6])
 
     with col1:
@@ -151,14 +153,80 @@ def search():
             pass
         else:
             option = 0
-            st.write('none selected')
+
+        temp_df = master_offense[master_offense['PlayerID'] == name_dict[option]].reset_index()
+        sums = career_stats(temp_df)
+
+        st.write('Career Stats:')
+
+        if sums['Pass Attempts'] > 0:
+            if sums['Pass Yards'] == 1:
+                temp1 = "1 yard"
+            else:
+                temp1 = f"{int(sums['Pass Yards'])} yards"
+
+            if sums['Passing TDs'] == 1:
+                temp2 = "1 TD"
+            else:
+                temp2 = f"{int(sums['Passing TDs'])} TDs"
+            
+            if sums['Interceptions'] == 1:
+                temp3 = "1 Int"
+            else:
+                temp3 = f"{int(sums['Interceptions'])} Ints"
+
+            perc = 100 * round(sums['Completions'] / sums['Pass Attempts'], 2)
+
+            st.caption("Passing")
+            st.code(f"{int(sums['Completions'])}/{int(sums['Pass Attempts'])} - {perc:.1f} %\n{temp1}\n{temp2}\n{temp3}")
+        
+        if sums['Rush Attempts'] > 0:
+            if sums['Rush Attempts'] == 1:
+                temp1 = "1 rush"
+            else:
+                temp1 = f"{int(sums['Rush Attempts'])} rushes"
+
+            if sums['Net Rush Yards'] == 1:
+                temp2 = "1 yard"
+            else:
+                temp2 = f"{int(sums['Net Rush Yards'])} yards"
+
+            if sums['Rushing TDs'] == 1:
+                temp3 = "1 TD"
+            else:
+                temp3 = f"{int(sums['Rushing TDs'])} TDs"
+
+            perc = round(sums['Net Rush Yards'] / sums['Rush Attempts'], 1)
+
+            st.caption("Rushing")
+            st.code(f"{temp1}\n{temp2}\n{perc} YPC\n{temp3}")
+
+        if sums['Catches'] > 0:
+            if sums['Catches'] == 1:
+                temp1 = "1 reception"
+            else:
+                temp1 = f"{int(sums['Catches'])} receptions"
+
+            if sums['Receiving Yards'] == 1:
+                temp2 = "1 yard"
+            else:
+                temp2 = f"{int(sums['Receiving Yards'])} yards"
+
+            if sums['Receiving TDs'] == 1:
+                temp3 = "1 TD"
+            else:
+                temp3 = f"{int(sums['Receiving TDs'])} TDs"
+
+            st.caption('Receiving')
+            st.code(f"{temp1}\n{temp2}\n{temp3}")
 
     with col2:
         if option == 0:
-            temp_df = master_offense
+            st.title('Texas Football History')
         else:
-            temp_df = master_offense[master_offense['PlayerID'] == name_dict[option]].reset_index()
-        st.dataframe(temp_df)
+            pass
+            # st.dataframe(temp_df)
+            # st.dataframe(sums)
 
 
 # Dictionary of pages
