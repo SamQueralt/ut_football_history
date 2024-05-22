@@ -154,7 +154,7 @@ def search():
         else:
             option = 0
 
-        if option > 0:
+        if option != 0:
             temp_df = master_offense[master_offense['PlayerID'] == name_dict[option]].reset_index()
             sums = career_stats(temp_df)
 
