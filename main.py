@@ -1,5 +1,7 @@
 import streamlit as st
 import pandas as pd
+import altair as alt
+
 st.set_page_config(
     page_title = "UT Football Box Score History",
     page_icon = "🤘",
@@ -7,8 +9,9 @@ st.set_page_config(
     # background_color="#bf5700",  
 )
 
-master_offense = pd.read_csv('master_stats_final.csv')
+master_offense = pd.read_csv('master_stats_final.csv').sort_values(by='Date')
 player_stats = master_offense.dropna(subset='First Name')
+game_stats = master_offense[master_offense['Last Name'] == 'Game']
 
 keys = []
 for index, row in player_stats.iterrows():
@@ -162,9 +165,9 @@ def search():
 
             if sums['Pass Attempts'] > 0:
                 if sums['Pass Yards'] == 1:
-                    temp1 = "1 yard"
+                    temp1 = "1 Yard"
                 else:
-                    temp1 = f"{int(sums['Pass Yards'])} yards"
+                    temp1 = f"{int(sums['Pass Yards'])} Yards"
 
                 if sums['Passing TDs'] == 1:
                     temp2 = "1 TD"
@@ -183,14 +186,14 @@ def search():
             
             if sums['Rush Attempts'] > 0:
                 if sums['Rush Attempts'] == 1:
-                    temp1 = "1 rush"
+                    temp1 = "1 Rush"
                 else:
-                    temp1 = f"{int(sums['Rush Attempts'])} rushes"
+                    temp1 = f"{int(sums['Rush Attempts'])} Rushes"
 
                 if sums['Net Rush Yards'] == 1:
-                    temp2 = "1 yard"
+                    temp2 = "1 Yard"
                 else:
-                    temp2 = f"{int(sums['Net Rush Yards'])} yards"
+                    temp2 = f"{int(sums['Net Rush Yards'])} Yards"
 
                 if sums['Rushing TDs'] == 1:
                     temp3 = "1 TD"
@@ -204,14 +207,14 @@ def search():
 
             if sums['Catches'] > 0:
                 if sums['Catches'] == 1:
-                    temp1 = "1 reception"
+                    temp1 = "1 Reception"
                 else:
-                    temp1 = f"{int(sums['Catches'])} receptions"
+                    temp1 = f"{int(sums['Catches'])} Receptions"
 
                 if sums['Receiving Yards'] == 1:
-                    temp2 = "1 yard"
+                    temp2 = "1 Yard"
                 else:
-                    temp2 = f"{int(sums['Receiving Yards'])} yards"
+                    temp2 = f"{int(sums['Receiving Yards'])} Yards"
 
                 if sums['Receiving TDs'] == 1:
                     temp3 = "1 TD"
@@ -220,15 +223,47 @@ def search():
 
                 st.caption('Receiving')
                 st.code(f"{temp1}\n{temp2}\n{temp3}")
-            else:
-                # for full texas history
-                pass
+        else:
+            sums = career_stats(game_stats)
+
+            perc = 100 * round(sums['Completions'] / sums['Pass Attempts'], 2)
+            ypc = round(sums['Net Rush Yards'] / sums['Rush Attempts'], 1)
+            
+            st.caption('Passing')
+            st.code(f"{int(sums['Completions'])}/{int(sums['Pass Attempts'])} - {perc:.1f} %\n{int(sums['Pass Yards'])} Yards\n{int(sums['Passing TDs'])} TDs\n{int(sums['Interceptions'])} Ints")
+            
+            st.caption('Rushing')
+            st.code(f"{int(sums['Rush Attempts'])} Rushes\n{int(sums['Net Rush Yards'])} Yards\n{ypc} YPC\n{int(sums['Rushing TDs'])} TDs")
+
+            st.caption('Receiving')
+            st.code(f"{int(sums['Catches'])} Receptions\n{int(sums['Receiving Yards'])} Yards\n{int(sums['Receiving TDs'])} TDs")
+
+            st.caption('Note some discrepancies in the data. This is not my fault! Here is a list of games with misinputted data:')
+            st.caption('Rice 1948, Alabama 1960, Oregon State 1980, Oklahoma 1980, UNC 1982, TCU 1989, Louisville 1994, Baylor 1994, Nebraska 1996')
 
     with col2:
         if option == 0:
             st.title('Texas Football History')
+
+            # temp = master_offense[master_offense['Last Name'] == 'TEAM']
+
+            st.dataframe(master_offense)
         else:
-            pass
+            interval = alt.selection_interval(encodings=['x'])
+
+            chart = alt.Chart(temp_df).mark_bar().encode(
+                x = 'Date',  
+                y = alt.Y('Fantasy:Q', title='Fantasy Points'), 
+                color = alt.condition(interval, 'Season', alt.value("lightgrey"))
+#                tooltip = ['']
+            ).add_selection(
+                interval 
+            ).properties(
+                title='Fantasy Points by Date'
+            )
+            chart
+
+            st.dataframe(temp_df)
             # st.dataframe(temp_df)
             # st.dataframe(sums)
 
