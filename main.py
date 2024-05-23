@@ -251,10 +251,12 @@ def search():
         else:
             interval = alt.selection_interval(encodings=['x'])
 
+            color_scale = alt.Scale(range=['#ebceb7', '#bf5700'])
+
             chart = alt.Chart(temp_df).mark_bar().encode(
                 x = 'Date',  
                 y = alt.Y('Fantasy:Q', title='Fantasy Points'), 
-                color = alt.condition(interval, 'Season', alt.value("lightgrey"))
+                color = alt.condition(interval, 'Season', alt.value("lightgrey"), scale = color_scale)
 #                tooltip = ['']
             ).add_selection(
                 interval 
