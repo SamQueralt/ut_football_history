@@ -161,8 +161,6 @@ def search():
             temp_df = master_offense[master_offense['PlayerID'] == name_dict[option]].reset_index()
             sums = career_stats(temp_df)
 
-            st.write('Career Stats:')
-
             if sums['Pass Attempts'] > 0:
                 if sums['Pass Yards'] == 1:
                     temp1 = "1 Yard"
