@@ -143,7 +143,7 @@ def main():
     
 
 def search():    
-    col1, col2 = st.columns([2,6])
+    col1, col2 = st.columns([2,7])
 
     with col1:
         option = st.selectbox(
@@ -221,6 +221,10 @@ def search():
 
                 st.caption('Receiving')
                 st.code(f"{temp1}\n{temp2}\n{temp3}")
+
+            st.write('Select games in the chart to filter the table.')
+            nrows = st.slider('', min_value=0, max_value=len(temp_df))
+
         else:
             sums = career_stats(game_stats)
 
@@ -241,31 +245,131 @@ def search():
 
     with col2:
         if option == 0:
-            st.title('Texas Football History')
+            st.title('Texas Football Offensive History')
 
-            # temp = master_offense[master_offense['Last Name'] == 'TEAM']
-
-            st.dataframe(master_offense)
-        else:
+            temp_df = master_offense[master_offense['Last Name'] == 'Game']
+            
             interval = alt.selection_interval(encodings=['x'])
 
             color_scale = alt.Scale(range=['#ebceb7', '#bf5700'])
 
+
             chart = alt.Chart(temp_df).mark_bar().encode(
-                x = 'Date',  
-                y = alt.Y('Fantasy:Q', title='Fantasy Points'), 
-                color = alt.condition(interval, 'Season', alt.value("lightgrey"), scale = color_scale)
-#                tooltip = ['']
+                x = alt.X('Date', 
+                          title = '',
+                          axis = None),  
+                y = alt.Y('Fantasy:Q', 
+                          title='Team Fantasy Points'), 
+                color = alt.condition(interval, 
+                                      'Season', 
+                                      alt.value("lightgrey"), 
+                                      scale = color_scale,
+                                      legend = None),
+                tooltip = ['Date', 'Opponent', 'Score']
             ).add_selection(
                 interval 
             ).properties(
-                title='Fantasy Points by Date'
+                width=800,
+                height=300
             )
             chart
 
-            st.dataframe(temp_df)
-            # st.dataframe(temp_df)
-            # st.dataframe(sums)
+            st.dataframe(master_offense)
+        else:
+            st.title(option)
+            ## attach games that the player missed
+            start = min(temp_df['Season'])
+            end = max(temp_df['Season'])
+
+            dates = game_stats[(game_stats['Season'] >= start) &
+                               (game_stats['Season'] <= end)].reset_index()
+
+            in_temp_df = dates['Date'].isin(temp_df['Date'])
+
+            for i in range(len(dates)):
+                if not in_temp_df[i]:
+                    new_row = pd.DataFrame([[i, temp_df['First Name'][0],temp_df['Last Name'][0],0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,dates['GameID'][i],dates['Link'][i],dates['Date'][i],dates['Home Team'][i],dates['Away Team'][i],dates['Home Score'][i],dates['Away Score'][i],dates['Texas Result'][i],dates['Season'][i],dates['Year'][i],temp_df['PlayerID'][0],temp_df['NameConcat'][0],temp_df['First Year'][0],temp_df['Last Year'][0],dates['Opponent'][i],dates['Score'],0.0]], columns=temp_df.columns, index=[0])
+                    temp_df = pd.concat([new_row, temp_df], ignore_index=True)
+
+            ## make bar chart
+            brush = alt.selection_interval(encodings=['x'])
+
+            color_scale = alt.Scale(range=['#ebceb7', '#bf5700'])
+
+            chart_selection = alt.Chart(temp_df).mark_bar().encode(
+                x = alt.X('Date', 
+                          title = '',
+                          axis = None),  
+                y = alt.Y('Fantasy:Q', 
+                          title='Fantasy Points'), 
+                color = alt.condition(brush, 
+                                      'Season', 
+                                      alt.value("lightgrey"), 
+                                      scale = color_scale,
+                                      legend = None),
+                tooltip = ['Opponent', 'Score']
+            ).add_selection(
+                brush 
+            ).properties(
+                width=800,
+                height=300
+            )
+
+            chart_base = alt.Chart(temp_df).mark_bar().encode(
+                x = alt.X('Date', 
+                          title = '',
+                          axis = None),  
+                y = alt.Y('Fantasy:Q', 
+                          title='Fantasy Points'), 
+                color = alt.condition(brush, 
+                                      'Season', 
+                                      alt.value("lightgrey"), 
+                                      scale = color_scale,
+                                      legend = None),
+                tooltip = ['Opponent', 'Score']
+            ).transform_filter(
+                brush 
+            ).properties(
+                width=800,
+                height=300
+            )
+
+            ranked_text = alt.Chart(temp_df).mark_text(align='right').encode(
+                y=alt.Y('row_number:O',axis=None),
+                color = alt.value('white')
+            ).transform_filter(
+                brush
+            ).transform_window(
+                row_number='row_number()'
+            ).properties(
+                width=1
+            ).transform_filter('datum.row_number < 10')
+
+            # Data Tables
+            date = ranked_text.encode(text='Date:T').properties(title=alt.TitleParams(text='Date', align='right'))
+            opp = ranked_text.encode(text='Opponent:N').properties(title=alt.TitleParams(text='Opponent', align='right'))
+
+            passyds = ranked_text.encode(text='Pass Yards:Q').properties(title=alt.TitleParams(text='Pass Yards', align='right'))
+            passtds = ranked_text.encode(text='Passing TDs:Q').properties(title=alt.TitleParams(text='Passing TDs', align='right'))
+            
+            rushyds = ranked_text.encode(text='Net Rush Yards:Q').properties(title=alt.TitleParams(text='Rush Yards', align='right'))
+            rushtds = ranked_text.encode(text='Rushing TDs:Q').properties(title=alt.TitleParams(text='Rush TDs', align='right'))
+
+            recyds = ranked_text.encode(text='Receiving Yards:Q').properties(title=alt.TitleParams(text='Receiving Yards', align='right'))
+            rectds = ranked_text.encode(text='Receiving TDs:Q').properties(title=alt.TitleParams(text='Receiving TDs', align='right'))
+            
+            text = alt.hconcat(date, opp, passyds, passtds, rushyds, rushtds, recyds, rectds) # Combine data tables
+
+            # Build chart
+            x = alt.vconcat(
+                chart_base + chart_selection,
+                text
+            ).resolve_legend(
+                color="independent"
+            ).configure_view(strokeWidth=0)
+            
+            x
+            
 
 
 # Dictionary of pages
