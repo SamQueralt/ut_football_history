@@ -342,7 +342,8 @@ def search():
             ).transform_window(
                 row_number='row_number()'
             ).properties(
-                width=1
+                width=1,
+                height = 200
             ).transform_filter('datum.row_number < 10')
 
             # Data Tables
