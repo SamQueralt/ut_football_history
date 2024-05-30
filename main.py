@@ -222,8 +222,9 @@ def search():
                 st.caption('Receiving')
                 st.code(f"{temp1}\n{temp2}\n{temp3}")
 
-            st.write('Select games in the chart to filter the table.')
-            nrows = st.slider('', min_value=0, max_value=len(temp_df))
+            default = min(10, len(temp_df))
+            nrows = st.slider('Max rows:', min_value=0, max_value=len(temp_df), value=default)
+            st.caption('Select games in the chart to filter the table.')
 
         else:
             sums = career_stats(game_stats)
@@ -253,7 +254,6 @@ def search():
 
             color_scale = alt.Scale(range=['#ebceb7', '#bf5700'])
 
-
             chart = alt.Chart(temp_df).mark_bar().encode(
                 x = alt.X('Date', 
                           title = '',
@@ -277,6 +277,7 @@ def search():
             st.dataframe(master_offense)
         else:
             st.title(option)
+
             ## attach games that the player missed
             start = min(temp_df['Season'])
             end = max(temp_df['Season'])
@@ -290,6 +291,8 @@ def search():
                 if not in_temp_df[i]:
                     new_row = pd.DataFrame([[i, temp_df['First Name'][0],temp_df['Last Name'][0],0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,dates['GameID'][i],dates['Link'][i],dates['Date'][i],dates['Home Team'][i],dates['Away Team'][i],dates['Home Score'][i],dates['Away Score'][i],dates['Texas Result'][i],dates['Season'][i],dates['Year'][i],temp_df['PlayerID'][0],temp_df['NameConcat'][0],temp_df['First Year'][0],temp_df['Last Year'][0],dates['Opponent'][i],dates['Score'],0.0]], columns=temp_df.columns, index=[0])
                     temp_df = pd.concat([new_row, temp_df], ignore_index=True)
+
+            temp_df = temp_df.sort_values(by = 'Date')
 
             ## make bar chart
             brush = alt.selection_interval(encodings=['x'])
@@ -333,18 +336,23 @@ def search():
                 width=800,
                 height=300
             )
+            
+            row_limit = str(f'datum.row_number < {nrows}')
 
             ranked_text = alt.Chart(temp_df).mark_text(align='right').encode(
-                y=alt.Y('row_number:O',axis=None),
-                color = alt.value('white')
+                y=alt.Y('row_number:O', axis=None),
+                text=alt.Text('value:Q'),  # Added to display some text
+                color=alt.value('white')
             ).transform_filter(
                 brush
             ).transform_window(
                 row_number='row_number()'
             ).properties(
-                width=1,
-                height = 200
-            ).transform_filter('datum.row_number < 10')
+                width=1
+            ).transform_filter(
+                row_limit
+            )
+
 
             # Data Tables
             date = ranked_text.encode(text='Date:T').properties(title=alt.TitleParams(text='Date', align='right'))
