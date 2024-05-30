@@ -6,7 +6,6 @@ st.set_page_config(
     page_title = "UT Football Box Score History",
     page_icon = "🤘",
     layout = "wide",
-    # background_color="#bf5700",  
 )
 
 master_offense = pd.read_csv('master_stats_final.csv').sort_values(by='Date')
@@ -266,7 +265,7 @@ def search():
                                       scale = color_scale,
                                       legend = None),
                 tooltip = ['Date', 'Opponent', 'Score']
-            ).add_selection(
+            ).add_params(
                 interval 
             ).properties(
                 width=800,
@@ -311,7 +310,7 @@ def search():
                                       scale = color_scale,
                                       legend = None),
                 tooltip = ['Opponent', 'Score']
-            ).add_selection(
+            ).add_params(
                 brush 
             ).properties(
                 width=800,
@@ -342,7 +341,7 @@ def search():
             ranked_text = alt.Chart(temp_df).mark_text(align='right').encode(
                 y=alt.Y('row_number:O', axis=None),
                 text=alt.Text('value:Q'),  # Added to display some text
-                color=alt.value('white')
+                color=alt.value('#bf5700')
             ).transform_filter(
                 brush
             ).transform_window(
