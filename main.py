@@ -341,13 +341,14 @@ def search():
             ranked_text = alt.Chart(temp_df).mark_text(align='right').encode(
                 y=alt.Y('row_number:O', axis=None),
                 text=alt.Text('value:Q'),  # Added to display some text
-                color=alt.value('#bf5700')
+                color=alt.value('white')
             ).transform_filter(
                 brush
             ).transform_window(
                 row_number='row_number()'
             ).properties(
-                width=1
+                width=1,
+                height = 150
             ).transform_filter(
                 row_limit
             )
