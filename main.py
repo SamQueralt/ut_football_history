@@ -348,7 +348,7 @@ def search():
                 row_number='row_number()'
             ).properties(
                 width=1,
-                height = 150
+                height=nrows*16
             ).transform_filter(
                 row_limit
             )
