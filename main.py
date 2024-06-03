@@ -221,8 +221,12 @@ def search():
                 st.caption('Receiving')
                 st.code(f"{temp1}\n{temp2}\n{temp3}")
 
-            default = min(10, len(temp_df))
-            nrows = st.slider('Max rows:', min_value=0, max_value=len(temp_df), value=default)
+            start = min(temp_df['Season'])
+            end = max(temp_df['Season'])
+
+            dates = game_stats[(game_stats['Season'] >= start) &
+                               (game_stats['Season'] <= end)].reset_index()
+
             st.caption('Select games in the chart to filter the table.')
 
         else:
@@ -278,12 +282,6 @@ def search():
             st.title(option)
 
             ## attach games that the player missed
-            start = min(temp_df['Season'])
-            end = max(temp_df['Season'])
-
-            dates = game_stats[(game_stats['Season'] >= start) &
-                               (game_stats['Season'] <= end)].reset_index()
-
             in_temp_df = dates['Date'].isin(temp_df['Date'])
 
             for i in range(len(dates)):
@@ -336,6 +334,7 @@ def search():
                 height=300
             )
             
+            nrows = len(dates)
             row_limit = str(f'datum.row_number < {nrows}')
 
             ranked_text = alt.Chart(temp_df).mark_text(align='right').encode(
@@ -377,7 +376,8 @@ def search():
                 color="independent"
             ).configure_view(strokeWidth=0)
             
-            x
+            st.altair_chart(x, use_container_width=True)
+
             
 
 
