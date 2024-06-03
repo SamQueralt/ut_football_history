@@ -252,30 +252,52 @@ def search():
             st.title('Texas Football Offensive History')
 
             temp_df = master_offense[master_offense['Last Name'] == 'Game']
-            
-            interval = alt.selection_interval(encodings=['x'])
 
             color_scale = alt.Scale(range=['#ebceb7', '#bf5700'])
+            color_scale_res = alt.Scale(domain=['Loss', 'Tie',  'Win'], range=['#ebceb7', '#bf5700', '#7fbf7f', '#2c7bb6'])
+
+
+            brush = alt.selection_interval(encodings=['x'])
+
+            header = alt.Chart(temp_df).mark_bar().encode(
+                x = alt.X('Date', 
+                          title = '',
+                          axis = None),  
+                y = alt.Y('Team Fantasy:Q', 
+                          title='Team Fantasy Points'),
+                color=alt.condition(
+                    alt.datum['Texas Result'] == 'Win',
+                    alt.value('#bf5700'),
+                    alt.value('#ebceb7')), 
+                tooltip = ['Date', 'Opponent', 'Score']
+            ).properties(
+                width=800,
+                height=80
+            ).add_params(
+                brush
+            )
 
             chart = alt.Chart(temp_df).mark_bar().encode(
                 x = alt.X('Date', 
                           title = '',
                           axis = None),  
-                y = alt.Y('Fantasy:Q', 
+                y = alt.Y('Team Fantasy:Q', 
                           title='Team Fantasy Points'), 
-                color = alt.condition(interval, 
-                                      'Season', 
-                                      alt.value("lightgrey"), 
-                                      scale = color_scale,
-                                      legend = None),
+                color = alt.Color('Season', 
+                                 scale=color_scale,
+                                 legend=None),
                 tooltip = ['Date', 'Opponent', 'Score']
-            ).add_params(
-                interval 
             ).properties(
                 width=800,
                 height=300
+            ).transform_filter(
+                brush
             )
-            chart
+            
+            x = alt.vconcat(
+                header, chart)
+
+            x
 
             st.dataframe(master_offense)
         else:
