@@ -9,6 +9,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
+
 master_offense = pd.read_csv('master_stats_final.csv').sort_values(by='Date')
 player_stats = master_offense.dropna(subset='First Name')
 game_stats = master_offense[master_offense['Last Name'] == 'Game']
@@ -254,6 +255,10 @@ def search():
 
             temp_df = master_offense[master_offense['Last Name'] == 'Game']
 
+            # cumulative wins
+            temp_df['result'] = temp_df['Texas Result'].apply(lambda x: 1 if x == 'Win' else (-1 if x == 'Loss' else 0))
+            temp_df['win_diff'] = temp_df['result'].cumsum()
+
             color_scale = alt.Scale(range=['#ebceb7', '#bf5700'])
             color_scale_res = alt.Scale(domain=['Loss', 'Tie',  'Win'], range=['#ebceb7', '#bf5700', '#7fbf7f', '#2c7bb6'])
 
@@ -265,7 +270,7 @@ def search():
                           title = '',
                           axis = None),  
                 y = alt.Y('Team Fantasy:Q', 
-                          title='Team Fantasy Points'),
+                          title=''),
                 color=alt.condition(
                     alt.datum['Texas Result'] == 'Win',
                     alt.value('#bf5700'),
@@ -282,8 +287,8 @@ def search():
                 x = alt.X('Date', 
                           title = '',
                           axis = None),  
-                y = alt.Y('Team Fantasy:Q', 
-                          title='Team Fantasy Points'), 
+                y = alt.Y('win_diff:Q', 
+                          title='Win Differential (since 1947)'), 
                 color = alt.Color('Season', 
                                  scale=color_scale,
                                  legend=None),
@@ -300,7 +305,7 @@ def search():
 
             x
 
-            st.dataframe(master_offense)
+            st.dataframe(temp_df)
         else:
             st.title(option)
 
@@ -337,7 +342,7 @@ def search():
                 width=800,
                 height=300
             )
-
+            
             chart_base = alt.Chart(temp_df).mark_bar().encode(
                 x = alt.X('Date', 
                           title = '',
