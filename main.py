@@ -10,9 +10,14 @@ st.set_page_config(
 )
 
 
-master_offense = pd.read_csv('master_stats_final.csv').sort_values(by='Date')
+master_offense = pd.read_csv('offensive_stats_final.csv').sort_values(by='Date')
+master_defense = pd.read_csv('defensive_stats_final.csv').sort_values(by='Date')
+
 player_stats = master_offense.dropna(subset='First Name')
 game_stats = master_offense[master_offense['Last Name'] == 'Game']
+
+player_stats_def = master_defense.dropna(subset='First Name')
+game_stats_def = master_defense[master_defense['Last Name'] == 'Game']
 
 keys = []
 for index, row in player_stats.iterrows():
@@ -144,6 +149,9 @@ def main():
     
 
 def search():    
+    off_def = st.selectbox('',
+                           ['Offensive','Defensive'])
+
     col1, col2 = st.columns([2,7])
 
     with col1:
