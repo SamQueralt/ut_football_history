@@ -332,11 +332,15 @@ def search():
 
             color_scale = alt.Scale(range=['#ebceb7', '#bf5700'])
 
-            base_chart = alt.Chart(temp_df).mark_bar().encode(
-                x = alt.X('Date', title='', axis = None),
-                y = alt.Y('Total Yards:Q', title='Total Yards'),
-                color = alt.Color('Season', scale=color_scale, legend=None),
-                tooltip = ['Opponent', 'Date', 'Total Yards', 'Total TDs' ,'Score']
+            zero_ind = max(temp_df['Total Yards']) * 0.005
+
+            base_chart = alt.Chart(temp_df).transform_calculate(
+                Total_Yards_Offset=f'datum["Total Yards"] == 0 ? {zero_ind} : datum["Total Yards"]'
+            ).mark_bar().encode(
+                x=alt.X('Date', title='', axis=None),
+                y=alt.Y('Total_Yards_Offset:Q', title='Total Yards'),
+                color=alt.Color('Season', scale=color_scale, legend=None),
+                tooltip=['Opponent', 'Date', 'Total Yards', 'Total TDs', 'Score']
             )
             
             st.altair_chart(base_chart, use_container_width=True)
