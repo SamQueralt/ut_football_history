@@ -1,9 +1,6 @@
 import streamlit as st
 import pandas as pd
 import altair as alt
-import seaborn as sns
-import matplotlib.pyplot as plt
-from streamlit_extras.switch_page_button import switch_page
 
 st.set_page_config(
     page_title = "UT Football Box Score History",
