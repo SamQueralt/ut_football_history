@@ -235,7 +235,7 @@ def search():
                                (game_stats['Season'] <= end)].reset_index()
 
             st.caption('Different colors in the chart correspond to different seasons. For more information, hover over the chart or refer to the game log.')
-
+            st.caption('Download the game log to open the csv in Excel.')
         else:
             sums = career_stats(game_stats)
 
@@ -251,9 +251,9 @@ def search():
             st.caption('Receiving')
             st.code(f"{int(sums['Catches'])} Receptions\n{int(sums['Receiving Yards'])} Yards\n{int(sums['Receiving TDs'])} TDs")
 
-            st.caption('Note some discrepancies in the data. This is not my fault! Here is a list of games with misinputted data:')
+            st.caption('Note some discrepancies in the receiving/passing stats. This is not my fault! Here is a list of games with misinputted data:')
             st.caption('Rice 1948, Alabama 1960, Oregon State 1980, Oklahoma 1980, UNC 1982, TCU 1989, Louisville 1994, Baylor 1994, Nebraska 1996')
-
+            st.caption('Download the game log to see all available columns.')
     with col2:
         if option == 0:
             st.title('Texas Football Offensive History')
@@ -281,9 +281,6 @@ def search():
                     alt.value('#bf5700'),
                     alt.value('#ebceb7')), 
                 tooltip = ['Date', 'Opponent', 'Score']
-            ).properties(
-                width=800,
-                height=80
             ).add_params(
                 brush
             )
@@ -298,19 +295,44 @@ def search():
                                  scale=color_scale,
                                  legend=None),
                 tooltip = ['Date', 'Opponent', 'Score']
-            ).properties(
-                width=800,
-                height=300
-            ).transform_filter(
-                brush
             )
+            # .transform_filter(
+            #     brush
+            # )
             
             x = alt.vconcat(
                 header, chart)
 
-            x
+            ### note to future sam: I commented out the original stacked chart
+
+            st.altair_chart(chart, use_container_width=True)
+
+            # full stats
+            dl_df = temp_df[['Date','Opponent','Score','Completions','Pass Attempts','Interceptions','Pass Yards','Passing TDs','Longest Pass','Sacks Taken','Rush Attempts','Rush Yards Gained','Rush Yards Lost','Net Rush Yards','Rushing TDs','Longest Rush','Yards Per Rush','Catches','Receiving Yards','Receiving TDs','Longest Reception','Total Yards','Total TDs','Season','Link']]
+
+            temp_df['Cmp/Att'] = temp_df['Completions'].astype(int).astype(str) + '/' + temp_df['Pass Attempts'].astype(int).astype(str)
+
+            # un expanded stats
+            temp_df = temp_df[['Cmp/Att','Pass Yards','Passing TDs','Interceptions','Rush Attempts','Net Rush Yards','Rushing TDs','Catches','Receiving Yards','Receiving TDs','Date','Opponent','Score','Link']]
+
+            temp_df.rename(columns = {'Pass Yards': 'Pass Yds',
+                                      'Passing TDs': 'Pass TDs',
+                                      'Interceptions': 'Int',
+                                      'Rush Attempts': 'Rush',
+                                      'Net Rush Yards': 'Rush Yds',
+                                      'Rushing TDs': 'Rush TDs',
+                                      'Catches': 'Rec',
+                                      'Receiving Yards': 'Rec Yds',
+                                      'Receiving TDs': 'Rec TDs'},
+                           inplace = True)
+            
+            temp_df.sort_values(by = 'Date')
+            temp_df.set_index(['Date', 'Opponent', 'Score'], inplace = True)
+
 
             st.dataframe(temp_df)
+        
+            st.download_button(label = 'Download Game Log', data = dl_df.to_csv(index = True), file_name = 'full_gamelog.csv')
         else:
             st.title(option)
 
@@ -324,8 +346,9 @@ def search():
 
             temp_df = temp_df.sort_values(by = 'Date')
 
-            # small_df = temp_df[['First Name', 'Last Name', 'Date', 'Opponent', 'Score', 'Pass Yards', 'Net Rush Yards', 'Receiving Yards']]
-            # melted_df = pd.melt(small_df, id_vars=['First Name', 'Last Name', 'Date', 'Opponent', 'Score'], var_name='Category', value_name='Yards')
+            small_df = temp_df[['First Name', 'Last Name', 'Date', 'Opponent', 'Score', 'Pass Yards', 'Net Rush Yards', 'Receiving Yards', 'Season']]
+            season_stats = small_df.groupby(['Season']).sum().reset_index()
+            season_stats['Season'].astype(int).astype(str)
 
             ## make bar chart
             # brush = alt.selection_interval(encodings=['x'])
@@ -345,6 +368,20 @@ def search():
             
             st.altair_chart(base_chart, use_container_width=True)
 
+            chart = alt.Chart(season_stats).mark_bar().encode(
+                x='Yards:Q',
+                y=alt.Y('Yard Type:N', sort='-x'),
+                color='Yard Type:N',
+                row='Season:N'
+            ).properties(
+                title='Total Yards by Type and Season'
+            ).interactive()
+
+            chart.show()
+
+
+            st.dataframe(season_stats)
+
             st.subheader('Game Log')
 
             col2_1, col2_2 = st.columns([6,1])
@@ -361,19 +398,87 @@ def search():
                 selected_seasons = [season for season, selected in season_dict.items() if selected]
 
                 st.caption('Type')
-                show_pass = st.checkbox('Passing', value = True)
-                show_rush = st.checkbox('Rushing', value = True)
-                show_rec = st.checkbox('Receiving', value = True)
 
-                st.text('')
-                st.checkbox('Hide Empty Games')
-                st.checkbox('Expand')
+                tot_pass = temp_df['Pass Yards'].sum()
+                tot_rush = temp_df['Net Rush Yards'].sum()
+                tot_rec = temp_df['Receiving Yards'].sum()
+
+                pass_bool = False
+                rush_bool = False
+                rec_bool = False
+
+                if tot_pass > tot_rush and tot_pass > tot_rec:
+                    pass_bool = True
+                elif tot_rec > tot_rush and tot_rec > tot_pass:
+                    rec_bool = True
+                else:
+                    rush_bool = True
+
+                if tot_pass > 1000:
+                    pass_bool = True
+                if tot_rec > 500:
+                    rec_bool = True
+                if tot_rush > 500:
+                    rush_bool = True
+                
+                show_pass = st.checkbox('Passing', value = pass_bool)
+                show_rush = st.checkbox('Rushing', value = rush_bool)
+                show_rec = st.checkbox('Receiving', value = rec_bool)
+
+                temp_df['Cmp/Att'] = temp_df['Completions'].astype(int).astype(str) + '/' + temp_df['Pass Attempts'].astype(int).astype(str)
+
+                pass_col = ['Cmp/Att','Pass Yards','Passing TDs','Interceptions']
+                rush_col = ['Rush Attempts','Net Rush Yards','Rushing TDs']
+                rec_col = ['Catches','Receiving Yards','Receiving TDs']
+                cols = [pass_col, rush_col, rec_col]
+                misc_col = ['Date','Opponent','Score','Link']
+
+                col_list = []
+                full_col_list = []
+                col_bools = [show_pass, show_rush, show_rec]
+                for i in range(3):
+                    full_col_list.extend(cols[i])
+                    if col_bools[i]:
+                        col_list.extend(cols[i])
+                
+                col_list.extend(misc_col)
+                full_col_list.extend(misc_col)
 
             with col2_1:
+                dl_log = temp_df[full_col_list]
+                
                 game_log = temp_df[temp_df['Season'].isin(selected_seasons)]
-                game_log = game_log[['Date', 'Opponent', 'Completions', 'Pass Attempts', 'Interceptions', 'Passing TDs', 'Rush Attempts', 'Net Rush Yards', 'Catches', 'Receiving Yards', 'Receiving TDs', 'Score']]
-                game_log.set_index(['Date', 'Opponent'], inplace = True)
+                game_log = game_log[col_list]
+
+                game_log.set_index(['Date', 'Opponent', 'Score'], inplace = True)
+                dl_log.set_index(['Date', 'Opponent', 'Score'], inplace = True)
+
+                game_log.rename(columns = {'Pass Yards': 'Pass Yds',
+                                           'Passing TDs': 'Pass TDs',
+                                           'Interceptions': 'Int',
+                                           'Rush Attempts': 'Rush',
+                                           'Net Rush Yards': 'Rush Yds',
+                                           'Rushing TDs': 'Rush TDs',
+                                           'Catches': 'Rec',
+                                           'Receiving Yards': 'Rec Yds',
+                                           'Receiving TDs': 'Rec TDs'},
+                           inplace = True)
+                
+                dl_log.rename(columns = {'Pass Yards': 'Pass Yds',
+                                         'Passing TDs': 'Pass TDs',
+                                         'Interceptions': 'Int',
+                                         'Rush Attempts': 'Rush',
+                                         'Net Rush Yards': 'Rush Yds',
+                                         'Rushing TDs': 'Rush TDs',
+                                         'Catches': 'Rec',
+                                         'Receiving Yards': 'Rec Yds',
+                                         'Receiving TDs': 'Rec TDs'},
+                           inplace = True)
+
                 st.dataframe(game_log)
+
+                st.download_button('Download Filtered Game Log', game_log.to_csv(index = True), file_name = f"{temp_df['Last Name'][0]}_{temp_df['First Name'][0]}_filtered_game_log.csv")
+                st.download_button('Download Full Game Log', dl_log.to_csv(index = True), file_name = f"{temp_df['Last Name'][0]}_{temp_df['First Name'][0]}_full_game_log.csv")
 
             # # text labels
             # text = base_chart.mark_text(
