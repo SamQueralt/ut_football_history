@@ -418,12 +418,16 @@ def search():
                 if tot_rush > 500:
                     rush_bool = True
                 
+                sent_list = ['', '', '']
+                desc_list = ['passers', 'rushers', 'recievers']
+                bool_list = [pass_bool, rush_bool, rec_bool]
 
-                for i in [pass_bool, rush_bool, rec_bool]:
-                    if i:
-                        pass ## make string list for each sentance
+                for i in range(3):
+                    if bool_list[i]:
+                        perc = (all_passers < tot_pass).mean() * 100
+                        sent_list[i] = f"He is in the {perc:.0f} percentile all {desc_list[i]}."
 
-                st.caption(f"{clone_df['First Name'][0]} {clone_df['Last Name'][0]} has a record of {win}-{loss}-{tie} in games in which he recorded a stat while at Texas.")
+                st.caption(f"{clone_df['First Name'][0]} {clone_df['Last Name'][0]} has a record of {win}-{loss}-{tie} in games in which he recorded a stat while at Texas. {sent_list[0]} {sent_list[1]} {sent_list[2]}")
 
             st.subheader('Game Log')
 
