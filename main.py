@@ -304,7 +304,6 @@ def search():
                 header, chart)
 
             ### note to future sam: I commented out the original stacked chart
-
             st.altair_chart(chart, use_container_width=True)
 
             # full stats
@@ -329,12 +328,15 @@ def search():
             temp_df.sort_values(by = 'Date')
             temp_df.set_index(['Date', 'Opponent', 'Score'], inplace = True)
 
-
+            st.header('Full Game History')
             st.dataframe(temp_df)
         
             st.download_button(label = 'Download Game Log', data = dl_df.to_csv(index = True), file_name = 'full_gamelog.csv')
         else:
             st.title(option)
+
+            # clone for blurb section
+            clone_df = temp_df
 
             ## attach games that the player missed
             in_temp_df = dates['Date'].isin(temp_df['Date'])
@@ -346,10 +348,7 @@ def search():
 
             temp_df = temp_df.sort_values(by = 'Date')
 
-            small_df = temp_df[['First Name', 'Last Name', 'Date', 'Opponent', 'Score', 'Pass Yards', 'Net Rush Yards', 'Receiving Yards', 'Season']]
-            season_stats = small_df.groupby(['Season']).sum().reset_index()
-            season_stats['Season'].astype(int).astype(str)
-
+            
             ## make bar chart
             # brush = alt.selection_interval(encodings=['x'])
 
@@ -368,19 +367,30 @@ def search():
             
             st.altair_chart(base_chart, use_container_width=True)
 
-            chart = alt.Chart(season_stats).mark_bar().encode(
-                x='Yards:Q',
-                y=alt.Y('Yard Type:N', sort='-x'),
-                color='Yard Type:N',
-                row='Season:N'
-            ).properties(
-                title='Total Yards by Type and Season'
-            ).interactive()
+            col2_1_1, col2_2_2 = st.columns([1,1])
 
-            chart.show()
+            with col2_1_1:
 
+                small_df = temp_df[['First Name', 'Last Name', 'Date', 'Opponent', 'Score', 'Pass Yards', 'Net Rush Yards', 'Receiving Yards', 'Season', 'Total Yards']]                
+                season_stats = small_df.groupby(['Season']).sum().reset_index()
+                season_stats['Season'].astype(int).astype(str)
 
-            st.dataframe(season_stats)
+                chart = alt.Chart(season_stats).mark_bar(size = 15).encode(
+                    x=alt.X('Total Yards:Q', title='Total Yards'),
+                    y=alt.Y('Season:O', title='Season'),
+                    color=alt.Color('Season', scale=color_scale, legend=None),
+                    tooltip=['Season', 'Pass Yards', 'Net Rush Yards', 'Receiving Yards']
+                )
+
+                st.altair_chart(chart, use_container_width=True)
+            
+            with col2_2_2:
+                win = len(clone_df[clone_df['Texas Result'] == 'Win'])
+                loss = len(clone_df[clone_df['Texas Result'] == 'Loss'])
+                tie = len(clone_df[clone_df['Texas Result'] == 'Tie'])
+
+                st.caption(f"{clone_df['First Name'][0]} {clone_df['Last Name'][0]} has a record of {win}-{loss}-{tie} in games which he recorded a stat while at Texas.")
+                #st.dataframe(clone_df)
 
             st.subheader('Game Log')
 
