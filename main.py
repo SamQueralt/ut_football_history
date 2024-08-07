@@ -19,6 +19,13 @@ game_stats = master_offense[master_offense['Last Name'] == 'Game']
 player_stats_def = master_defense.dropna(subset='First Name')
 game_stats_def = master_defense[master_defense['Last Name'] == 'Game']
 
+career_stats_off = pd.read_csv('offensive_career_stats.csv')
+career_stats_def = pd.read_csv('defensive_career_stats.csv')
+
+all_passers = career_stats_off[career_stats_off['Pass Yards'] != 0]
+all_rushers = career_stats_off[career_stats_off['Net Rush Yards'] != 0]
+all_receivers = career_stats_off[career_stats_off['Receiving Yards'] != 0]
+
 keys = []
 for index, row in player_stats.iterrows():
     first_year = int(row['First Year'])
@@ -389,25 +396,6 @@ def search():
                 loss = len(clone_df[clone_df['Texas Result'] == 'Loss'])
                 tie = len(clone_df[clone_df['Texas Result'] == 'Tie'])
 
-                st.caption(f"{clone_df['First Name'][0]} {clone_df['Last Name'][0]} has a record of {win}-{loss}-{tie} in games in which he recorded a stat while at Texas.")
-
-            st.subheader('Game Log')
-
-            col2_1, col2_2 = st.columns([6,1])
-
-            with col2_2:
-                st.caption('Season')
-
-                season_dict = {}
-                seasons = temp_df['Season'].unique()
-
-                for season in seasons:
-                    season_dict[season] = st.checkbox(str(season), value=True)
-
-                selected_seasons = [season for season, selected in season_dict.items() if selected]
-
-                st.caption('Type')
-
                 tot_pass = temp_df['Pass Yards'].sum()
                 tot_rush = temp_df['Net Rush Yards'].sum()
                 tot_rec = temp_df['Receiving Yards'].sum()
@@ -429,6 +417,30 @@ def search():
                     rec_bool = True
                 if tot_rush > 500:
                     rush_bool = True
+                
+
+                for i in [pass_bool, rush_bool, rec_bool]:
+                    if i:
+                        pass ## make string list for each sentance
+
+                st.caption(f"{clone_df['First Name'][0]} {clone_df['Last Name'][0]} has a record of {win}-{loss}-{tie} in games in which he recorded a stat while at Texas.")
+
+            st.subheader('Game Log')
+
+            col2_1, col2_2 = st.columns([6,1])
+
+            with col2_2:
+                st.caption('Season')
+
+                season_dict = {}
+                seasons = temp_df['Season'].unique()
+
+                for season in seasons:
+                    season_dict[season] = st.checkbox(str(season), value=True)
+
+                selected_seasons = [season for season, selected in season_dict.items() if selected]
+
+                st.caption('Type')
                 
                 show_pass = st.checkbox('Passing', value = pass_bool)
                 show_rush = st.checkbox('Rushing', value = rush_bool)
