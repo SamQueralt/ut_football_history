@@ -389,8 +389,7 @@ def search():
                 loss = len(clone_df[clone_df['Texas Result'] == 'Loss'])
                 tie = len(clone_df[clone_df['Texas Result'] == 'Tie'])
 
-                st.caption(f"{clone_df['First Name'][0]} {clone_df['Last Name'][0]} has a record of {win}-{loss}-{tie} in games which he recorded a stat while at Texas.")
-                #st.dataframe(clone_df)
+                st.caption(f"{clone_df['First Name'][0]} {clone_df['Last Name'][0]} has a record of {win}-{loss}-{tie} in games in which he recorded a stat while at Texas.")
 
             st.subheader('Game Log')
 
