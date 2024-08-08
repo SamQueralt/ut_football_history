@@ -9,7 +9,6 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-
 master_offense = pd.read_csv('offensive_stats_final.csv').sort_values(by='Date')
 master_defense = pd.read_csv('defensive_stats_final.csv').sort_values(by='Date')
 
@@ -22,9 +21,9 @@ game_stats_def = master_defense[master_defense['Last Name'] == 'Game']
 career_stats_off = pd.read_csv('offensive_career_stats.csv')
 career_stats_def = pd.read_csv('defensive_career_stats.csv')
 
-all_passers = career_stats_off[career_stats_off['Pass Yards'] != 0]
-all_rushers = career_stats_off[career_stats_off['Net Rush Yards'] != 0]
-all_receivers = career_stats_off[career_stats_off['Receiving Yards'] != 0]
+all_passers = career_stats_off[career_stats_off['Pass Yards'] != 0]['Pass Yards']
+all_rushers = career_stats_off[career_stats_off['Net Rush Yards'] != 0]['Net Rush Yards']
+all_receivers = career_stats_off[career_stats_off['Receiving Yards'] != 0]['Receiving Yards']
 
 keys = []
 for index, row in player_stats.iterrows():
@@ -155,7 +154,7 @@ def main():
     st.text('Defensive stats are on the way. Prepare for some weird names because the early box score pages cut them off for spacing reasons.')
     
 
-def search():
+def offense():
     col1, col2 = st.columns([2,7])
 
     with col1:
@@ -419,13 +418,15 @@ def search():
                     rush_bool = True
                 
                 sent_list = ['', '', '']
-                desc_list = ['passers', 'rushers', 'recievers']
+                desc_list = ['passing', 'rushing', 'receiving']
                 bool_list = [pass_bool, rush_bool, rec_bool]
+                career_list = [all_passers, all_rushers, all_receivers]
+                tot_list = [tot_pass, tot_rush, tot_rec]
 
                 for i in range(3):
                     if bool_list[i]:
-                        perc = (all_passers < tot_pass).mean() * 100
-                        sent_list[i] = f"He is in the {perc:.0f} percentile all {desc_list[i]}."
+                        perc = (career_list[i] < tot_list[i]).mean() * 100
+                        sent_list[i] = f"He is in the {perc:.0f}th percentile in {desc_list[i]} yards."
 
                 st.caption(f"{clone_df['First Name'][0]} {clone_df['Last Name'][0]} has a record of {win}-{loss}-{tie} in games in which he recorded a stat while at Texas. {sent_list[0]} {sent_list[1]} {sent_list[2]}")
 
@@ -575,16 +576,55 @@ def search():
             #      color="independent"
             #  ).configure_view(strokeWidth=0)
 
+def home():
+    st.title('Texas Football Box Score Project')
 
+    col_1, col_2, col_3 = st.columns([5,1,5])
+
+    with col_1:
+        st.text('')
+        st.markdown("**Hello! My name is Sam Queralt.** Texas football's stats are all digitized, but not easily accessible. They're all in different places, and they can't be searched or filtered. I'm not great at coding, but I know enough about web scraping to put together a database of all the Texas box scores I have access to. This is not affiliated with UT, and there are surely errors littered throughout the database. Please contact @sam_queralt on Twitter if you find anything that needs fixing. Also tag me if you use this tool to find a stat! I'm curious what quirks there are to find (see the Bowmer mystery). Happy searching!")
+
+    with col_3:
+        st.text('')
+        st.text('')
+        st.text('')
+        st.subheader('Quick Download')
+
+        # master_defense.rename(columns={'##',Last Name,First Name,Solo,Ast,Tot,TFL,tfl_yds,FF,FR,fr_yd,Int,int_yds,BrUp,Blkd,Sack,sack_yds,QH,GameID,Date,Home Team,Away Team,Home Score,Away Score,Texas Result,Link,Season,fr_yds,Year,PlayerID,NameConcat,First Year,Last Year,Opponent,Score},
+        #     inplace=True)
+
+
+        # st.download_button("")
+
+def defense(): 
+    st.title("Coming soon.")
+
+def records():
+    st.title("Coming soon.")
+    ## find games in a row
+
+def bowmer():
+    st.title("Bowmer")
+    # also include other finds like the high sack game or the onlyfans links
 
 # Dictionary of pages
 PAGES = {
-    "Main": main,
-    "Search": search,
+    "Home": home,
+    "Offense": offense,
+    "Defense": defense,
+    "Record Search": records,
+    "Database": main,
+    "The Bowmer Mystery": bowmer
 }
 
+
 st.sidebar.title('Navigation')
-selection = st.sidebar.radio("Go to", list(PAGES.keys()))
+st.sidebar.caption("Select a page to navigate to below. Close this navigation bar once you've chosen a page for optimized viewing.")
+
+selection = st.sidebar.radio("", list(PAGES.keys()))
+
+st.sidebar.caption("Please report any errors to @sam_queralt on Twitter.")
 
 page = PAGES[selection]
 page()
