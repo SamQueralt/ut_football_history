@@ -6,7 +6,7 @@ st.set_page_config(
     page_title = "UT Football Box Score History",
     page_icon = "🤘",
     layout = "wide",
-    initial_sidebar_state="collapsed",
+    initial_sidebar_state="expanded",
 )
 
 master_offense = pd.read_csv('offensive_stats_final.csv').sort_values(by='Date')
