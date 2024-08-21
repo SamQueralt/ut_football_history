@@ -15,6 +15,14 @@ master_defense = pd.read_csv('defensive_stats_final.csv').sort_values(by='Date')
 player_stats = master_offense.dropna(subset='First Name')
 game_stats = master_offense[master_offense['Last Name'] == 'Game']
 
+# give placeholder first names to defensive players
+# tester = master_defense[master_defense['Last Name'] != 'Game']
+# tester = tester[tester['Last Name'] != 'TEAM']
+# tester = tester[tester['Last Name'] != 'Team']
+# tester = tester[tester['First Name'].isnull()]
+# for i, row in tester.iterrows():
+#     master_defense.loc[i, 'First Name'] = 'N/A'
+
 player_stats_def = master_defense.dropna(subset='First Name')
 game_stats_def = master_defense[master_defense['Last Name'] == 'Game']
 
@@ -35,6 +43,15 @@ for index, row in player_stats.iterrows():
 values = list(player_stats['PlayerID'])
 name_dict = dict(map(lambda i,j : (i,j) , keys,values))
 
+keys = []
+for index, row in player_stats_def.iterrows():
+    first_year = int(row['First Year'])
+    last_year = int(row['Last Year'])
+    key = f"{row['First Name']} {row['Last Name']}, {first_year}-{last_year}"
+    keys.append(key)
+
+values = list(player_stats_def['PlayerID'])
+name_dict_def = dict(map(lambda i,j : (i,j) , keys,values))
 
 # Function to filter the list based on the search query
 def filter_list(query, data):
@@ -153,7 +170,6 @@ def main():
     st.text('Stats will not be updated until the most recent season is posted at this link: https://texassports.com/sports/2013/7/21/FB_0721134841.aspx')
     st.text('Defensive stats are on the way. Prepare for some weird names because the early box score pages cut them off for spacing reasons.')
     
-
 def offense():
     col1, col2 = st.columns([2,7])
 
@@ -598,7 +614,425 @@ def home():
         # st.download_button("")
 
 def defense(): 
-    st.title("Coming soon.")
+    col1, col2 = st.columns([2,7])
+
+    with col1:
+        option = st.selectbox(
+                    "",
+                    name_dict_def,
+                    index=None,
+                    placeholder="Search for player...",
+                    )
+        if option:
+            pass
+        else:
+            option = 0
+
+        if option != 0:
+            temp_df = master_defense[master_defense['PlayerID'] == name_dict_def[option]].reset_index()
+            sums = career_stats(temp_df)
+
+            if sums['Tot'] > 0:
+                tot = sums['Tot']
+                solo = sums['Solo']
+                ast = sums['Ast']
+
+                st.caption("Tackling")
+                st.code(f"{int(tot)} Total\n{int(solo)} Solo\n{int(ast)} Ast")
+
+            if sums['TFL'] > 0 or sums['Sack'] > 0 or sums['QH'] > 0:
+                tfl = sums['TFL']
+                sack = sums['Sack']
+                hits = sums['QH']
+
+                if tfl == 1:
+                    temp1 = "TFL"
+                else:
+                    temp1 = "TFLs"
+                if str(tfl)[-2:] == '.5':
+                    tfl = str(tfl)
+                else:
+                    tfl = str(int(tfl))
+
+                if sack == 1:
+                    temp2 = 'Sack'
+                else:
+                    temp2 = 'Sacks'
+                if str(sack)[-2:] == '.5':
+                    sack = str(sack)
+                else:
+                    sack = int(sack)
+
+                if hits == 1:
+                    temp3 = 'QB Hit'
+                else:
+                    temp3 = 'QB Hits'
+                if str(hits)[-2:] == '.5':
+                    hits = str(hits)
+                else:
+                    hits = int(hits)
+
+                st.caption("Behind the line")
+                st.code(f"{tfl} {temp1}\n{sack} {temp2}\n{hits} {temp3}")
+            
+            if sums['FF'] > 0 or sums['FR'] > 0:
+                st.caption("Fumbles")
+                st.code(f"{int(sums['FF'])} Forced\n{int(sums['FR'])} Recovered")
+            
+            if sums['Int'] > 0 or sums['BrUp'] > 0:
+                if sums['Int'] == 1:
+                    temp1 = 'Interception'
+                else:
+                    temp1 = 'Interceptions'
+                
+                if sums['BrUp'] == 1:
+                    temp2 = 'Breakup'
+                else:
+                    temp2 = 'Breakups'
+
+                st.caption('Coverage')
+                st.code(f"{int(sums['Int'])} {temp1}\n{int(sums['BrUp'])} {temp2}")
+
+            start = min(temp_df['Season'])
+            end = max(temp_df['Season'])
+
+            dates = game_stats[(game_stats['Season'] >= start) &
+                               (game_stats['Season'] <= end)].reset_index()
+
+            st.caption('Different colors in the chart correspond to different seasons. For more information, hover over the chart or refer to the game log.')
+            st.caption('Download the game log to open the csv in Excel.')
+        else:
+            sums = career_stats(game_stats)
+
+            perc = 100 * round(sums['Completions'] / sums['Pass Attempts'], 2)
+            ypc = round(sums['Net Rush Yards'] / sums['Rush Attempts'], 1)
+            
+            st.caption('Passing')
+            st.code(f"{int(sums['Completions'])}/{int(sums['Pass Attempts'])} - {perc:.1f} %\n{int(sums['Pass Yards'])} Yards\n{int(sums['Passing TDs'])} TDs\n{int(sums['Interceptions'])} Ints")
+            
+            st.caption('Rushing')
+            st.code(f"{int(sums['Rush Attempts'])} Rushes\n{int(sums['Net Rush Yards'])} Yards\n{ypc} YPC\n{int(sums['Rushing TDs'])} TDs")
+
+            st.caption('Receiving')
+            st.code(f"{int(sums['Catches'])} Receptions\n{int(sums['Receiving Yards'])} Yards\n{int(sums['Receiving TDs'])} TDs")
+
+            st.caption('I think there is some tackling inflation going on (maybe with adding assisted and solo tackles, creating duplicates). A few of these games seem like quite the feat if the stats are telling the truth.')
+            st.caption('Download the game log to see all available columns.')
+    with col2:
+        if option == 0:
+            st.title('Texas Football Defensive History')
+
+            temp_df = master_offense[master_offense['Last Name'] == 'Game']
+
+            # cumulative wins
+            temp_df['result'] = temp_df['Texas Result'].apply(lambda x: 1 if x == 'Win' else (-1 if x == 'Loss' else 0))
+            temp_df['win_diff'] = temp_df['result'].cumsum()
+
+            color_scale = alt.Scale(range=['#ebceb7', '#bf5700'])
+            color_scale_res = alt.Scale(domain=['Loss', 'Tie',  'Win'], range=['#ebceb7', '#bf5700', '#7fbf7f', '#2c7bb6'])
+
+
+            brush = alt.selection_interval(encodings=['x'])
+
+            header = alt.Chart(temp_df).mark_bar().encode(
+                x = alt.X('Date', 
+                          title = '',
+                          axis = None),  
+                y = alt.Y('Team Fantasy:Q', 
+                          title=''),
+                color=alt.condition(
+                    alt.datum['Texas Result'] == 'Win',
+                    alt.value('#bf5700'),
+                    alt.value('#ebceb7')), 
+                tooltip = ['Date', 'Opponent', 'Score']
+            ).add_params(
+                brush
+            )
+
+            chart = alt.Chart(temp_df).mark_bar().encode(
+                x = alt.X('Date', 
+                          title = '',
+                          axis = None),  
+                y = alt.Y('win_diff:Q', 
+                          title='Win Differential (since 1947)'), 
+                color = alt.Color('Season', 
+                                 scale=color_scale,
+                                 legend=None),
+                tooltip = ['Date', 'Opponent', 'Score']
+            )
+            # .transform_filter(
+            #     brush
+            # )
+            
+            x = alt.vconcat(
+                header, chart)
+
+            ### note to future sam: I commented out the original stacked chart
+            st.altair_chart(chart, use_container_width=True)
+
+            # full stats
+            dl_df = temp_df[['Date','Opponent','Score','Completions','Pass Attempts','Interceptions','Pass Yards','Passing TDs','Longest Pass','Sacks Taken','Rush Attempts','Rush Yards Gained','Rush Yards Lost','Net Rush Yards','Rushing TDs','Longest Rush','Yards Per Rush','Catches','Receiving Yards','Receiving TDs','Longest Reception','Total Yards','Total TDs','Season','Link']]
+
+            temp_df['Cmp/Att'] = temp_df['Completions'].astype(int).astype(str) + '/' + temp_df['Pass Attempts'].astype(int).astype(str)
+
+            # un expanded stats
+            temp_df = temp_df[['Cmp/Att','Pass Yards','Passing TDs','Interceptions','Rush Attempts','Net Rush Yards','Rushing TDs','Catches','Receiving Yards','Receiving TDs','Date','Opponent','Score','Link']]
+
+            temp_df.rename(columns = {'Pass Yards': 'Pass Yds',
+                                      'Passing TDs': 'Pass TDs',
+                                      'Interceptions': 'Int',
+                                      'Rush Attempts': 'Rush',
+                                      'Net Rush Yards': 'Rush Yds',
+                                      'Rushing TDs': 'Rush TDs',
+                                      'Catches': 'Rec',
+                                      'Receiving Yards': 'Rec Yds',
+                                      'Receiving TDs': 'Rec TDs'},
+                           inplace = True)
+            
+            temp_df.sort_values(by = 'Date')
+            temp_df.set_index(['Date', 'Opponent', 'Score'], inplace = True)
+
+            st.header('Full Game History')
+            st.dataframe(temp_df)
+        
+            st.download_button(label = 'Download Game Log', data = dl_df.to_csv(index = True), file_name = 'full_gamelog.csv')
+        else:
+            st.title(option)
+
+            # clone for blurb section
+            clone_df = temp_df
+
+            ## attach games that the player missed
+            in_temp_df = dates['Date'].isin(temp_df['Date'])
+
+            for i in range(len(dates)):
+                if not in_temp_df[i]:
+                    new_row = pd.DataFrame([[i, temp_df['First Name'][0],temp_df['Last Name'][0],0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,dates['GameID'][i],dates['Link'][i],dates['Date'][i],dates['Home Team'][i],dates['Away Team'][i],dates['Home Score'][i],dates['Away Score'][i],dates['Texas Result'][i],dates['Season'][i],0.0,0.0,dates['Year'][i],temp_df['PlayerID'][0],temp_df['NameConcat'][0],temp_df['First Year'][0],temp_df['Last Year'][0],dates['Opponent'][i],dates['Score'][i],0.0,0.0]], columns=temp_df.columns, index=[0])
+                    temp_df = pd.concat([new_row, temp_df], ignore_index=True)
+
+            temp_df = temp_df.sort_values(by = 'Date')
+
+            
+            ## make bar chart
+            # brush = alt.selection_interval(encodings=['x'])
+
+            color_scale = alt.Scale(range=['#ebceb7', '#bf5700'])
+
+            zero_ind = max(temp_df['Total Yards']) * 0.005
+
+            base_chart = alt.Chart(temp_df).transform_calculate(
+                Total_Yards_Offset=f'datum["Total Yards"] == 0 ? {zero_ind} : datum["Total Yards"]'
+            ).mark_bar().encode(
+                x=alt.X('Date', title='', axis=None),
+                y=alt.Y('Total_Yards_Offset:Q', title='Total Yards'),
+                color=alt.Color('Season', scale=color_scale, legend=None),
+                tooltip=['Opponent', 'Date', 'Total Yards', 'Total TDs', 'Score']
+            )
+            
+            st.altair_chart(base_chart, use_container_width=True)
+
+            col2_1_1, col2_2_2 = st.columns([1,1])
+
+            with col2_1_1:
+
+                small_df = temp_df[['First Name', 'Last Name', 'Date', 'Opponent', 'Score', 'Pass Yards', 'Net Rush Yards', 'Receiving Yards', 'Season', 'Total Yards']]                
+                season_stats = small_df.groupby(['Season']).sum().reset_index()
+                season_stats['Season'].astype(int).astype(str)
+
+                chart = alt.Chart(season_stats).mark_bar(size = 15).encode(
+                    x=alt.X('Total Yards:Q', title='Total Yards'),
+                    y=alt.Y('Season:O', title='Season'),
+                    color=alt.Color('Season', scale=color_scale, legend=None),
+                    tooltip=['Season', 'Pass Yards', 'Net Rush Yards', 'Receiving Yards']
+                )
+
+                st.altair_chart(chart, use_container_width=True)
+            
+            with col2_2_2:
+                win = len(clone_df[clone_df['Texas Result'] == 'Win'])
+                loss = len(clone_df[clone_df['Texas Result'] == 'Loss'])
+                tie = len(clone_df[clone_df['Texas Result'] == 'Tie'])
+
+                tot_pass = temp_df['Pass Yards'].sum()
+                tot_rush = temp_df['Net Rush Yards'].sum()
+                tot_rec = temp_df['Receiving Yards'].sum()
+
+                pass_bool = False
+                rush_bool = False
+                rec_bool = False
+
+                if tot_pass > tot_rush and tot_pass > tot_rec:
+                    pass_bool = True
+                elif tot_rec > tot_rush and tot_rec > tot_pass:
+                    rec_bool = True
+                else:
+                    rush_bool = True
+
+                if tot_pass > 1000:
+                    pass_bool = True
+                if tot_rec > 500:
+                    rec_bool = True
+                if tot_rush > 500:
+                    rush_bool = True
+                
+                sent_list = ['', '', '']
+                desc_list = ['passing', 'rushing', 'receiving']
+                bool_list = [pass_bool, rush_bool, rec_bool]
+                career_list = [all_passers, all_rushers, all_receivers]
+                tot_list = [tot_pass, tot_rush, tot_rec]
+
+                for i in range(3):
+                    if bool_list[i]:
+                        perc = (career_list[i] < tot_list[i]).mean() * 100
+                        sent_list[i] = f"He is in the {perc:.0f}th percentile in {desc_list[i]} yards."
+
+                st.caption(f"{clone_df['First Name'][0]} {clone_df['Last Name'][0]} has a record of {win}-{loss}-{tie} in games in which he recorded a stat while at Texas. {sent_list[0]} {sent_list[1]} {sent_list[2]}")
+
+            st.subheader('Game Log')
+
+            col2_1, col2_2 = st.columns([6,1])
+
+            with col2_2:
+                st.caption('Season')
+
+                season_dict = {}
+                seasons = temp_df['Season'].unique()
+
+                for season in seasons:
+                    season_dict[season] = st.checkbox(str(season), value=True)
+
+                selected_seasons = [season for season, selected in season_dict.items() if selected]
+
+                st.caption('Type')
+                
+                show_pass = st.checkbox('Passing', value = pass_bool)
+                show_rush = st.checkbox('Rushing', value = rush_bool)
+                show_rec = st.checkbox('Receiving', value = rec_bool)
+
+                temp_df['Cmp/Att'] = temp_df['Completions'].astype(int).astype(str) + '/' + temp_df['Pass Attempts'].astype(int).astype(str)
+
+                pass_col = ['Cmp/Att','Pass Yards','Passing TDs','Interceptions']
+                rush_col = ['Rush Attempts','Net Rush Yards','Rushing TDs']
+                rec_col = ['Catches','Receiving Yards','Receiving TDs']
+                cols = [pass_col, rush_col, rec_col]
+                misc_col = ['Date','Opponent','Score','Link']
+
+                col_list = []
+                full_col_list = []
+                col_bools = [show_pass, show_rush, show_rec]
+                for i in range(3):
+                    full_col_list.extend(cols[i])
+                    if col_bools[i]:
+                        col_list.extend(cols[i])
+                
+                col_list.extend(misc_col)
+                full_col_list.extend(misc_col)
+
+            with col2_1:
+                dl_log = temp_df[full_col_list]
+                
+                game_log = temp_df[temp_df['Season'].isin(selected_seasons)]
+                game_log = game_log[col_list]
+
+                game_log.set_index(['Date', 'Opponent', 'Score'], inplace = True)
+                dl_log.set_index(['Date', 'Opponent', 'Score'], inplace = True)
+
+                game_log.rename(columns = {'Pass Yards': 'Pass Yds',
+                                           'Passing TDs': 'Pass TDs',
+                                           'Interceptions': 'Int',
+                                           'Rush Attempts': 'Rush',
+                                           'Net Rush Yards': 'Rush Yds',
+                                           'Rushing TDs': 'Rush TDs',
+                                           'Catches': 'Rec',
+                                           'Receiving Yards': 'Rec Yds',
+                                           'Receiving TDs': 'Rec TDs'},
+                           inplace = True)
+                
+                dl_log.rename(columns = {'Pass Yards': 'Pass Yds',
+                                         'Passing TDs': 'Pass TDs',
+                                         'Interceptions': 'Int',
+                                         'Rush Attempts': 'Rush',
+                                         'Net Rush Yards': 'Rush Yds',
+                                         'Rushing TDs': 'Rush TDs',
+                                         'Catches': 'Rec',
+                                         'Receiving Yards': 'Rec Yds',
+                                         'Receiving TDs': 'Rec TDs'},
+                           inplace = True)
+
+                st.dataframe(game_log)
+
+                st.download_button('Download Filtered Game Log', game_log.to_csv(index = True), file_name = f"{temp_df['Last Name'][0]}_{temp_df['First Name'][0]}_filtered_game_log.csv")
+                st.download_button('Download Full Game Log', dl_log.to_csv(index = True), file_name = f"{temp_df['Last Name'][0]}_{temp_df['First Name'][0]}_full_game_log.csv")
+
+            # # text labels
+            # text = base_chart.mark_text(
+            #     align = 'center',
+            #     baseline = 'middle',
+            #     dx = 30,
+            #     dy = -20,
+            #     angle = 305 
+            # ).encode(
+            #     text = alt.Text('Opponent:N'),
+            #     color = alt.value('white')
+            # )
+
+            # # Chart with selection
+            # chart_selection = base_chart.add_params(
+            #     brush
+            # ).properties(
+            #     width=800,
+            #     height=300
+            # )
+
+            # # Chart base with filter
+            # chart_base = base_chart.transform_filter(
+            #     brush
+            # ).properties(
+            #     width=800,
+            #     height=300
+            # )
+
+            # # filterable table
+            # nrows = len(dates)
+            # row_limit = str(f'datum.row_number < {nrows}')
+
+            # ranked_text = alt.Chart(temp_df).mark_text(align='right').encode(
+            #     y=alt.Y('row_number:O', axis=None),
+            #     text=alt.Text('value:Q'),  # Added to display some text
+            #     color=alt.value('white')
+            # ).transform_filter(
+            #     brush
+            # ).transform_window(
+            #     row_number='row_number()'
+            # ).properties(
+            #     width=1,
+            #     height=nrows*16
+            # ).transform_filter(
+            #     row_limit
+            # )
+
+            # # Data Tables
+            # date = ranked_text.encode(text='Date:T').properties(title=alt.TitleParams(text='Date', align='right'))
+            # opp = ranked_text.encode(text='Opponent:N').properties(title=alt.TitleParams(text='Opponent', align='right'))
+
+            # passyds = ranked_text.encode(text='Pass Yards:Q').properties(title=alt.TitleParams(text='Pass Yards', align='right'))
+            # passtds = ranked_text.encode(text='Passing TDs:Q').properties(title=alt.TitleParams(text='Passing TDs', align='right'))
+            # 
+            # rushyds = ranked_text.encode(text='Net Rush Yards:Q').properties(title=alt.TitleParams(text='Rush Yards', align='right'))
+            # rushtds = ranked_text.encode(text='Rushing TDs:Q').properties(title=alt.TitleParams(text='Rush TDs', align='right'))
+
+            # recyds = ranked_text.encode(text='Receiving Yards:Q').properties(title=alt.TitleParams(text='Receiving Yards', align='right'))
+            # rectds = ranked_text.encode(text='Receiving TDs:Q').properties(title=alt.TitleParams(text='Receiving TDs', align='right'))
+            # 
+            # text = alt.hconcat(date, opp, passyds, passtds, rushyds, rushtds, recyds, rectds) # Combine data tables
+
+            #  # Build chart
+            #  x = alt.vconcat(
+            #      chart_ base + chart_selection,
+            #      text
+            #  ).resolve_legend(
+            #      color="independent"
+            #  ).configure_view(strokeWidth=0)
 
 def records():
     st.title("Coming soon.")
