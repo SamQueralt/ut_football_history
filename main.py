@@ -33,6 +33,10 @@ all_passers = career_stats_off[career_stats_off['Pass Yards'] != 0]['Pass Yards'
 all_rushers = career_stats_off[career_stats_off['Net Rush Yards'] != 0]['Net Rush Yards']
 all_receivers = career_stats_off[career_stats_off['Receiving Yards'] != 0]['Receiving Yards']
 
+all_tacklers = career_stats_def[career_stats_def['Tot'] != 0]['Tot']
+all_sacks = career_stats_def[career_stats_def['Sack'] != 0]['Sack']
+all_interceptions = career_stats_def[career_stats_def['Int'] != 0]['Int']
+
 keys = []
 for index, row in player_stats.iterrows():
     first_year = int(row['First Year'])
@@ -275,7 +279,7 @@ def offense():
 
             st.caption('Note some discrepancies in the receiving/passing stats. This is not my fault! Here is a list of games with misinputted data:')
             st.caption('Rice 1948, Alabama 1960, Oregon State 1980, Oklahoma 1980, UNC 1982, TCU 1989, Louisville 1994, Baylor 1994, Nebraska 1996')
-            st.caption('Download the game log to see all available columns.')
+            st.caption('Download the game log to see all available columns. If you want to download the full box score data (not just team stats), visit the home page.')
     with col2:
         if option == 0:
             st.title('Texas Football Offensive History')
@@ -353,7 +357,7 @@ def offense():
             st.header('Full Game History')
             st.dataframe(temp_df)
         
-            st.download_button(label = 'Download Game Log', data = dl_df.to_csv(index = True), file_name = 'full_gamelog.csv')
+            st.download_button(label = 'Download Game Log', data = dl_df.to_csv(index = False), file_name = 'full_off_gamelog.csv')
         else:
             st.title(option)
 
@@ -441,8 +445,16 @@ def offense():
 
                 for i in range(3):
                     if bool_list[i]:
-                        perc = (career_list[i] < tot_list[i]).mean() * 100
-                        sent_list[i] = f"He is in the {perc:.0f}th percentile in {desc_list[i]} yards."
+                        perc = f"{(career_list[i] < tot_list[i]).mean() * 100:.0f}"
+
+                        if perc[-1] == '1':
+                            perc = str(f"{perc}st")
+                        elif perc[-1] == '2':
+                            perc = str(f"{perc}nd")
+                        else:
+                            perc = str(f"{perc}th")
+
+                        sent_list[i] = f"He is in the {perc} percentile in {desc_list[i]} yards."
 
                 st.caption(f"{clone_df['First Name'][0]} {clone_df['Last Name'][0]} has a record of {win}-{loss}-{tie} in games in which he recorded a stat while at Texas. {sent_list[0]} {sent_list[1]} {sent_list[2]}")
 
@@ -700,7 +712,7 @@ def defense():
                                (game_stats['Season'] <= end)].reset_index()
 
             st.caption('Different colors in the chart correspond to different seasons. For more information, hover over the chart or refer to the game log.')
-            st.caption('Download the game log to open the csv in Excel.')
+            st.caption('Download the game log to open the csv in Excel. This file also includes turnover return yards and TFL yards.')
         else:
             sums = career_stats(game_stats_def)
 
@@ -735,8 +747,8 @@ def defense():
             st.caption('Coverage')
             st.code(f"{int(sums['Int'])} Interceptions\n{int(sums['BrUp'])} Pass Breakups")
             
-            st.caption('I think there is some tackling inflation going on (maybe with adding assisted and solo tackles, creating duplicates). A few of these games seem like quite the feat if the stats are telling the truth.')
-            st.caption('Download the game log to see all available columns.')
+            st.caption('I think there is some tackling inflation going on (maybe with adding assisted and solo tackles, creating duplicates). A few of these games seem like quite the feat if the stats are telling the truth. See Boston College and Virginia in back to back games in 1977.')
+            st.caption('Download the game log to see the yards associated with sacks, TFLs, interceptions, and fumble recoveries. If you want to download the full box score data (not just team stats), visit the home page.')
     with col2:
         if option == 0:
             st.title('Texas Football Defensive History')
@@ -789,31 +801,18 @@ def defense():
             st.altair_chart(chart, use_container_width=True)
 
             # full stats
-            dl_df = temp_df[['##','Last Name','First Name','Solo','Ast','Tot','TFL','tfl_yds','FF','FR','fr_yd','Int','int_yds','BrUp','Blkd','Sack','sack_yds','QH','Date','Home Team','Away Team',Home Score,Away Score,Texas Result,Link,Season,fr_yds,Year,PlayerID,NameConcat,First Year,Last Year,Opponent,Score]]
-
-            temp_df['Cmp/Att'] = temp_df['Completions'].astype(int).astype(str) + '/' + temp_df['Pass Attempts'].astype(int).astype(str)
+            dl_df = temp_df[['Date','Opponent','Score','Solo','Ast','Tot','TFL','tfl_yds','FF','FR','fr_yds','Int','int_yds','BrUp','Blkd','Sack','sack_yds','QH','Season','Link']]
 
             # un expanded stats
-            temp_df = temp_df[['Cmp/Att','Pass Yards','Passing TDs','Interceptions','Rush Attempts','Net Rush Yards','Rushing TDs','Catches','Receiving Yards','Receiving TDs','Date','Opponent','Score','Link']]
-
-            temp_df.rename(columns = {'Pass Yards': 'Pass Yds',
-                                      'Passing TDs': 'Pass TDs',
-                                      'Interceptions': 'Int',
-                                      'Rush Attempts': 'Rush',
-                                      'Net Rush Yards': 'Rush Yds',
-                                      'Rushing TDs': 'Rush TDs',
-                                      'Catches': 'Rec',
-                                      'Receiving Yards': 'Rec Yds',
-                                      'Receiving TDs': 'Rec TDs'},
-                           inplace = True)
+            temp_df = temp_df[['Solo','Ast','Tot','TFL','FF','FR','Int','BrUp','Sack','QH','Date','Opponent','Score','Link']]
             
-            temp_df.sort_values(by = 'Date')
+            temp_df.sort_values(by = 'Date', ascending=False, inplace = True)
             temp_df.set_index(['Date', 'Opponent', 'Score'], inplace = True)
 
             st.header('Full Game History')
             st.dataframe(temp_df)
         
-            st.download_button(label = 'Download Game Log', data = dl_df.to_csv(index = True), file_name = 'full_gamelog.csv')
+            st.download_button(label = 'Download Game Log', data = dl_df.to_csv(index = False), file_name = 'full_def_gamelog.csv')
         else:
             st.title(option)
 
@@ -825,10 +824,48 @@ def defense():
 
             for i in range(len(dates)):
                 if not in_temp_df[i]:
-                    new_row = pd.DataFrame([[i, temp_df['First Name'][0],temp_df['Last Name'][0],0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,dates['GameID'][i],dates['Link'][i],dates['Date'][i],dates['Home Team'][i],dates['Away Team'][i],dates['Home Score'][i],dates['Away Score'][i],dates['Texas Result'][i],dates['Season'][i],0.0,0.0,dates['Year'][i],temp_df['PlayerID'][0],temp_df['NameConcat'][0],temp_df['First Year'][0],temp_df['Last Year'][0],dates['Opponent'][i],dates['Score'][i],0.0,0.0]], columns=temp_df.columns, index=[0])
-                    temp_df = pd.concat([new_row, temp_df], ignore_index=True)
+                    new_row = {
+                        '##': temp_df['##'][0],
+                        'Last Name': temp_df['Last Name'][0],
+                        'First Name': temp_df['First Name'][0],
+                        'Solo': 0.0,
+                        'Ast': 0.0,
+                        'Tot': 0.0,
+                        'TFL': 0.0,
+                        'tfl_yds': 0.0,
+                        'FF': 0.0,
+                        'FR': 0.0,
+                        'fr_yds': 0.0,
+                        'Int': 0.0,
+                        'int_yds': 0.0,
+                        'BrUp': 0.0,
+                        'Blkd': 0.0,
+                        'Sack': 0.0,
+                        'sack_yds': 0.0,
+                        'QH': 0.0,
+                        'GameID': dates['GameID'][i],
+                        'Date': dates['Date'][i],
+                        'Home Team': dates['Home Team'][i],
+                        'Away Team': dates['Away Team'][i],
+                        'Home Score': dates['Home Score'][i],
+                        'Away Score': dates['Away Score'][i],
+                        'Texas Result': dates['Texas Result'][i],
+                        'Link': dates['Link'][i],
+                        'Season': dates['Season'][i],
+                        'Year': dates['Year'][i],
+                        'PlayerID': temp_df['PlayerID'][0],
+                        'NameConcat': temp_df['NameConcat'][0],
+                        'First Year': temp_df['First Year'][0],
+                        'Last Year': temp_df['Last Year'][0],
+                        'Opponent': dates['Opponent'][i],
+                        'Score': dates['Score'][i]
+                    }
 
-            temp_df = temp_df.sort_values(by = 'Date')
+                    # Convert dictionary to a DataFrame
+                    new_row_df = pd.DataFrame([new_row])
+                    temp_df = pd.concat([new_row_df, temp_df], ignore_index=True)
+
+            temp_df.sort_values(by = 'Date', ascending=False, inplace=True)
 
             
             ## make bar chart
@@ -836,15 +873,15 @@ def defense():
 
             color_scale = alt.Scale(range=['#ebceb7', '#bf5700'])
 
-            zero_ind = max(temp_df['Total Yards']) * 0.005
+            zero_ind = max(temp_df['Tot']) * 0.005
 
             base_chart = alt.Chart(temp_df).transform_calculate(
-                Total_Yards_Offset=f'datum["Total Yards"] == 0 ? {zero_ind} : datum["Total Yards"]'
+                Tot_Offset=f'datum["Tot"] == 0 ? {zero_ind} : datum["Tot"]'
             ).mark_bar().encode(
                 x=alt.X('Date', title='', axis=None),
-                y=alt.Y('Total_Yards_Offset:Q', title='Total Yards'),
+                y=alt.Y('Tot_Offset:Q', title='Total Tackles'),
                 color=alt.Color('Season', scale=color_scale, legend=None),
-                tooltip=['Opponent', 'Date', 'Total Yards', 'Total TDs', 'Score']
+                tooltip=['Opponent', 'Date', 'Tot', 'Score']
             )
             
             st.altair_chart(base_chart, use_container_width=True)
@@ -853,15 +890,15 @@ def defense():
 
             with col2_1_1:
 
-                small_df = temp_df[['First Name', 'Last Name', 'Date', 'Opponent', 'Score', 'Pass Yards', 'Net Rush Yards', 'Receiving Yards', 'Season', 'Total Yards']]                
+                small_df = temp_df[['First Name', 'Last Name', 'Date', 'Opponent', 'Score', 'Tot', 'TFL', 'Sack', 'Int', 'Season']]                
                 season_stats = small_df.groupby(['Season']).sum().reset_index()
                 season_stats['Season'].astype(int).astype(str)
 
                 chart = alt.Chart(season_stats).mark_bar(size = 15).encode(
-                    x=alt.X('Total Yards:Q', title='Total Yards'),
+                    x=alt.X('Tot:Q', title='Total Tackles'),
                     y=alt.Y('Season:O', title='Season'),
                     color=alt.Color('Season', scale=color_scale, legend=None),
-                    tooltip=['Season', 'Pass Yards', 'Net Rush Yards', 'Receiving Yards']
+                    tooltip=['Season', 'Tot', 'TFL', 'Sack', 'Int']
                 )
 
                 st.altair_chart(chart, use_container_width=True)
@@ -871,41 +908,34 @@ def defense():
                 loss = len(clone_df[clone_df['Texas Result'] == 'Loss'])
                 tie = len(clone_df[clone_df['Texas Result'] == 'Tie'])
 
-                tot_pass = temp_df['Pass Yards'].sum()
-                tot_rush = temp_df['Net Rush Yards'].sum()
-                tot_rec = temp_df['Receiving Yards'].sum()
-
-                pass_bool = False
-                rush_bool = False
-                rec_bool = False
-
-                if tot_pass > tot_rush and tot_pass > tot_rec:
-                    pass_bool = True
-                elif tot_rec > tot_rush and tot_rec > tot_pass:
-                    rec_bool = True
-                else:
-                    rush_bool = True
-
-                if tot_pass > 1000:
-                    pass_bool = True
-                if tot_rec > 500:
-                    rec_bool = True
-                if tot_rush > 500:
-                    rush_bool = True
+                tot_tot = temp_df['Tot'].sum()
+                tot_sack = temp_df['Sack'].sum()
+                tot_int = temp_df['Int'].sum()
                 
                 sent_list = ['', '', '']
-                desc_list = ['passing', 'rushing', 'receiving']
-                bool_list = [pass_bool, rush_bool, rec_bool]
-                career_list = [all_passers, all_rushers, all_receivers]
-                tot_list = [tot_pass, tot_rush, tot_rec]
+                desc_list = ['tackling', 'sacks', 'interceptions']
+                perc_list = ['', '', '']
+                career_list = [all_tacklers, all_sacks, all_interceptions]
+                tot_list = [tot_tot, tot_sack, tot_int]
 
                 for i in range(3):
-                    if bool_list[i]:
-                        perc = (career_list[i] < tot_list[i]).mean() * 100
-                        sent_list[i] = f"He is in the {perc:.0f}th percentile in {desc_list[i]} yards."
+                    perc = (career_list[i] < tot_list[i]).mean() * 100
+                    perc_list[i] = perc
+
+                for i in range(3):
+                    if perc_list[i] == max(perc_list) or perc_list[i] > 75:
+                        perc = f"{perc_list[i]:.0f}"
+
+                        if perc[-1] == '1':
+                            perc = str(f"{perc}st")
+                        elif perc[-1] == '2':
+                            perc = str(f"{perc}nd")
+                        else:
+                            perc = str(f"{perc}th")
+
+                        sent_list[i] = f"He is in the {perc} percentile in {desc_list[i]}."
 
                 st.caption(f"{clone_df['First Name'][0]} {clone_df['Last Name'][0]} has a record of {win}-{loss}-{tie} in games in which he recorded a stat while at Texas. {sent_list[0]} {sent_list[1]} {sent_list[2]}")
-
             st.subheader('Game Log')
 
             col2_1, col2_2 = st.columns([6,1])
@@ -921,61 +951,14 @@ def defense():
 
                 selected_seasons = [season for season, selected in season_dict.items() if selected]
 
-                st.caption('Type')
-                
-                show_pass = st.checkbox('Passing', value = pass_bool)
-                show_rush = st.checkbox('Rushing', value = rush_bool)
-                show_rec = st.checkbox('Receiving', value = rec_bool)
-
-                temp_df['Cmp/Att'] = temp_df['Completions'].astype(int).astype(str) + '/' + temp_df['Pass Attempts'].astype(int).astype(str)
-
-                pass_col = ['Cmp/Att','Pass Yards','Passing TDs','Interceptions']
-                rush_col = ['Rush Attempts','Net Rush Yards','Rushing TDs']
-                rec_col = ['Catches','Receiving Yards','Receiving TDs']
-                cols = [pass_col, rush_col, rec_col]
-                misc_col = ['Date','Opponent','Score','Link']
-
-                col_list = []
-                full_col_list = []
-                col_bools = [show_pass, show_rush, show_rec]
-                for i in range(3):
-                    full_col_list.extend(cols[i])
-                    if col_bools[i]:
-                        col_list.extend(cols[i])
-                
-                col_list.extend(misc_col)
-                full_col_list.extend(misc_col)
-
             with col2_1:
-                dl_log = temp_df[full_col_list]
+                dl_log = temp_df[['Date','Opponent','Score','Solo','Ast','Tot','TFL','tfl_yds','FF','FR','fr_yds','Int','int_yds','BrUp','Blkd','Sack','sack_yds','QH','Season','Link']]
                 
                 game_log = temp_df[temp_df['Season'].isin(selected_seasons)]
-                game_log = game_log[col_list]
+                game_log = game_log[['Date','Opponent','Score','Solo','Ast','Tot','TFL','FF','FR','Int','BrUp','Blkd','Sack','QH','Link']]
 
                 game_log.set_index(['Date', 'Opponent', 'Score'], inplace = True)
                 dl_log.set_index(['Date', 'Opponent', 'Score'], inplace = True)
-
-                game_log.rename(columns = {'Pass Yards': 'Pass Yds',
-                                           'Passing TDs': 'Pass TDs',
-                                           'Interceptions': 'Int',
-                                           'Rush Attempts': 'Rush',
-                                           'Net Rush Yards': 'Rush Yds',
-                                           'Rushing TDs': 'Rush TDs',
-                                           'Catches': 'Rec',
-                                           'Receiving Yards': 'Rec Yds',
-                                           'Receiving TDs': 'Rec TDs'},
-                           inplace = True)
-                
-                dl_log.rename(columns = {'Pass Yards': 'Pass Yds',
-                                         'Passing TDs': 'Pass TDs',
-                                         'Interceptions': 'Int',
-                                         'Rush Attempts': 'Rush',
-                                         'Net Rush Yards': 'Rush Yds',
-                                         'Rushing TDs': 'Rush TDs',
-                                         'Catches': 'Rec',
-                                         'Receiving Yards': 'Rec Yds',
-                                         'Receiving TDs': 'Rec TDs'},
-                           inplace = True)
 
                 st.dataframe(game_log)
 
