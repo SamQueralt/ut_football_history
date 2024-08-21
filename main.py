@@ -661,7 +661,7 @@ def defense():
                 if str(sack)[-2:] == '.5':
                     sack = str(sack)
                 else:
-                    sack = int(sack)
+                    sack = str(int(sack))
 
                 if hits == 1:
                     temp3 = 'QB Hit'
@@ -670,7 +670,7 @@ def defense():
                 if str(hits)[-2:] == '.5':
                     hits = str(hits)
                 else:
-                    hits = int(hits)
+                    hits = str(int(hits))
 
                 st.caption("Behind the line")
                 st.code(f"{tfl} {temp1}\n{sack} {temp2}\n{hits} {temp3}")
@@ -686,9 +686,9 @@ def defense():
                     temp1 = 'Interceptions'
                 
                 if sums['BrUp'] == 1:
-                    temp2 = 'Breakup'
+                    temp2 = 'Pass Breakup'
                 else:
-                    temp2 = 'Breakups'
+                    temp2 = 'Pass Breakups'
 
                 st.caption('Coverage')
                 st.code(f"{int(sums['Int'])} {temp1}\n{int(sums['BrUp'])} {temp2}")
@@ -702,27 +702,46 @@ def defense():
             st.caption('Different colors in the chart correspond to different seasons. For more information, hover over the chart or refer to the game log.')
             st.caption('Download the game log to open the csv in Excel.')
         else:
-            sums = career_stats(game_stats)
+            sums = career_stats(game_stats_def)
 
-            perc = 100 * round(sums['Completions'] / sums['Pass Attempts'], 2)
-            ypc = round(sums['Net Rush Yards'] / sums['Rush Attempts'], 1)
+            st.caption("Tackling")
+            st.code(f"{int(sums['Tot'])} Total\n{int(sums['Solo'])} Solo\n{int(sums['Ast'])} Ast")
+
+            tfl = sums['TFL']
+            sack = sums['Sack']
+            hits = sums['QH']
+
+            if str(tfl)[-2:] == '.5':
+                tfl = str(tfl)
+            else:
+                tfl = str(int(tfl))
+
+            if str(sack)[-2:] == '.5':
+                sack = str(sack)
+            else:
+                sack = str(int(sack))
+
+            if str(hits)[-2:] == '.5':
+                hits = str(hits)
+            else:
+                hits = str(int(hits))
+
+            st.caption("Behind the line")
+            st.code(f"{tfl} TFLs\n{sack} Sacks\n{hits} QB Hits")
+
+            st.caption("Fumbles")
+            st.code(f"{int(sums['FF'])} Forced\n{int(sums['FR'])} Recovered")
+
+            st.caption('Coverage')
+            st.code(f"{int(sums['Int'])} Interceptions\n{int(sums['BrUp'])} Pass Breakups")
             
-            st.caption('Passing')
-            st.code(f"{int(sums['Completions'])}/{int(sums['Pass Attempts'])} - {perc:.1f} %\n{int(sums['Pass Yards'])} Yards\n{int(sums['Passing TDs'])} TDs\n{int(sums['Interceptions'])} Ints")
-            
-            st.caption('Rushing')
-            st.code(f"{int(sums['Rush Attempts'])} Rushes\n{int(sums['Net Rush Yards'])} Yards\n{ypc} YPC\n{int(sums['Rushing TDs'])} TDs")
-
-            st.caption('Receiving')
-            st.code(f"{int(sums['Catches'])} Receptions\n{int(sums['Receiving Yards'])} Yards\n{int(sums['Receiving TDs'])} TDs")
-
             st.caption('I think there is some tackling inflation going on (maybe with adding assisted and solo tackles, creating duplicates). A few of these games seem like quite the feat if the stats are telling the truth.')
             st.caption('Download the game log to see all available columns.')
     with col2:
         if option == 0:
             st.title('Texas Football Defensive History')
 
-            temp_df = master_offense[master_offense['Last Name'] == 'Game']
+            temp_df = master_defense[master_defense['Last Name'] == 'Game']
 
             # cumulative wins
             temp_df['result'] = temp_df['Texas Result'].apply(lambda x: 1 if x == 'Win' else (-1 if x == 'Loss' else 0))
@@ -730,7 +749,6 @@ def defense():
 
             color_scale = alt.Scale(range=['#ebceb7', '#bf5700'])
             color_scale_res = alt.Scale(domain=['Loss', 'Tie',  'Win'], range=['#ebceb7', '#bf5700', '#7fbf7f', '#2c7bb6'])
-
 
             brush = alt.selection_interval(encodings=['x'])
 
@@ -771,7 +789,7 @@ def defense():
             st.altair_chart(chart, use_container_width=True)
 
             # full stats
-            dl_df = temp_df[['Date','Opponent','Score','Completions','Pass Attempts','Interceptions','Pass Yards','Passing TDs','Longest Pass','Sacks Taken','Rush Attempts','Rush Yards Gained','Rush Yards Lost','Net Rush Yards','Rushing TDs','Longest Rush','Yards Per Rush','Catches','Receiving Yards','Receiving TDs','Longest Reception','Total Yards','Total TDs','Season','Link']]
+            dl_df = temp_df[['##','Last Name','First Name','Solo','Ast','Tot','TFL','tfl_yds','FF','FR','fr_yd','Int','int_yds','BrUp','Blkd','Sack','sack_yds','QH','Date','Home Team','Away Team',Home Score,Away Score,Texas Result,Link,Season,fr_yds,Year,PlayerID,NameConcat,First Year,Last Year,Opponent,Score]]
 
             temp_df['Cmp/Att'] = temp_df['Completions'].astype(int).astype(str) + '/' + temp_df['Pass Attempts'].astype(int).astype(str)
 
