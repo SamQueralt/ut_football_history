@@ -11,6 +11,7 @@ st.set_page_config(
 
 master_offense = pd.read_csv('offensive_stats_final.csv').sort_values(by='Date')
 master_defense = pd.read_csv('defensive_stats_final.csv').sort_values(by='Date')
+master_merged = pd.read_csv('merged_stats_final.csv').sort_values(by='Date')
 
 player_stats = master_offense.dropna(subset='First Name')
 game_stats = master_offense[master_offense['Last Name'] == 'Game']
@@ -1036,8 +1037,35 @@ def defense():
             #  ).configure_view(strokeWidth=0)
 
 def records():
-    st.title("Coming soon.")
-    ## find games in a row
+    st.title("Record Search")
+
+    col1, col2 = st.columns([1,3])
+    
+    with col1:
+        options = ['Player Leaderboards',
+                    'Player Consecutive',
+                    'Team Leaderboards',
+                    'Team Consecutive']
+
+        x = st.selectbox("Select Records to Search", 
+                         options)
+        
+        index = options.index(x)
+
+        if index > 1:
+            temp_df = master_merged[master_merged['Last Name'] == 'Game']
+        else:
+            temp_df = master_merged[master_merged['Last Name'] != 'Game']
+
+        if index % 2 == 0:
+            leader = True
+        else:
+            leader = False
+
+                
+        
+    with col2:
+        pass
 
 def bowmer():
     st.title("Bowmer")
