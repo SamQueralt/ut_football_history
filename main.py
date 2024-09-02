@@ -1039,31 +1039,62 @@ def defense():
 def records():
     st.title("Record Search")
 
-    col1, col2 = st.columns([1,3])
+    col1, col2 = st.columns([2,3])
     
     with col1:
-        options = ['Player Leaderboards',
-                    'Player Consecutive',
-                    'Team Leaderboards',
-                    'Team Consecutive']
+        st.caption('Select categories you wish to search.')
 
-        x = st.selectbox("Select Records to Search", 
-                         options)
-        
-        index = options.index(x)
+        col11, col12, col13 = st.columns([3,2,2])
 
-        if index > 1:
-            temp_df = master_merged[master_merged['Last Name'] == 'Game']
-        else:
-            temp_df = master_merged[master_merged['Last Name'] != 'Game']
-
-        if index % 2 == 0:
-            leader = True
-        else:
-            leader = False
-
+        with col11:
+            cat = st.radio('Category', ['Player','Team'])
+            if cat == 'Player':
+                typ = st.radio('Type', ['Leaderboard', 'Benchmarks'])
+                dem = st.radio('Event', ['Game', 'Season', 'Career'])
                 
-        
+                if typ == 'Benchmarks':
+                    if dem == 'Career':
+                        num_stat = st.checkbox('Add second stat?')
+                    else:
+                        typ2 = st.radio('Benchmark Type', ['Consecutive', 'Total'])
+                        num_stat = st.checkbox('Add second stat?')
+                    
+            else:
+                typ = st.radio('Type', ['Leaderboard', 'Benchmarks'])
+                dem = st.radio('Event', ['Game', 'Season'])
+
+                if typ == 'Benchmarks':
+                    typ2 = st.radio('Benchmark Type', ['Total', 'Consecutive'])    
+                    num_stat = st.checkbox('Add second stat?')
+
+        with col12:
+            if typ == 'Benchmarks':
+                stat1 = st.selectbox('Stat', ['Pass Yds', 'Pass TDs', 'Rush Yds', 'YPC', 'Rush TDs', 'Rec Yds', 'Rec TDs', 'Tackles', 'TFLs', 'Sacks', 'Ints', 'FFs'])
+
+                if num_stat == True:
+                    stat2 = st.selectbox('Stat 2', ['Pass Yds', 'Pass TDs', 'Rush Yds', 'YPC', 'Rush TDs', 'Rec Yds', 'Rec TDs', 'Tackles', 'TFLs', 'Sacks', 'Ints', 'FFs'])
+            else:
+                stat_lead = st.selectbox('Stat', ['Pass Yds', 'Pass TDs', 'Rush Yds', 'YPC', 'Rush TDs', 'Rec Yds', 'Rec TDs', 'Tackles', 'TFLs', 'Sacks', 'Ints', 'FFs'])
+
+        with col13:
+            if typ == 'Benchmarks':
+                stat_min1 = st.number_input('Minimum', value = 0)
+
+                if num_stat == True:
+                    stat_min2 = st.number_input('Stat 2 Minimum', value = 0)
+            else:
+                stat_lead = st.selectbox('Stat', ['Pass Yds', 'Pass TDs', 'Rush Yds', 'YPC', 'Rush TDs', 'Rec Yds', 'Rec TDs', 'Tackles', 'TFLs', 'Sacks', 'Ints', 'FFs'])
+
+
+
+
+
+
+    if cat == 'Team':
+        temp_df = master_merged[master_merged['Last Name'] == 'Game']
+    else:
+        temp_df = master_merged[master_merged['Last Name'] != 'Game']
+                
     with col2:
         pass
 
