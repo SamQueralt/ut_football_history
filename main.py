@@ -1,4 +1,5 @@
 import streamlit as st
+import numpy as np
 import pandas as pd
 import altair as alt
 
@@ -1039,8 +1040,14 @@ def defense():
 def records():
     st.title("Record Search")
 
-    col1, col2 = st.columns([2,3])
+    col1, col2 = st.columns([1,1])
     
+    stat1 = 'Null'
+    stat2 = 'Null'
+    stat_lead = 'Null'
+    stat_min1 = None
+    stat_min2 = None
+
     with col1:
         st.caption('Select categories you wish to search.')
 
@@ -1050,14 +1057,13 @@ def records():
             cat = st.radio('Category', ['Player','Team'])
             if cat == 'Player':
                 typ = st.radio('Type', ['Leaderboard', 'Benchmarks'])
-                dem = st.radio('Event', ['Game', 'Season', 'Career'])
                 
                 if typ == 'Benchmarks':
-                    if dem == 'Career':
-                        num_stat = st.checkbox('Add second stat?')
-                    else:
-                        typ2 = st.radio('Benchmark Type', ['Consecutive', 'Total'])
-                        num_stat = st.checkbox('Add second stat?')
+                    dem = st.radio('Event', ['Game', 'Season'])
+                    typ2 = st.radio('Benchmark Type', ['Consecutive', 'Total'])
+                    num_stat = st.checkbox('Add second stat?')
+                else:
+                    dem = st.radio('Event', ['Game', 'Season', 'Career'])
                     
             else:
                 typ = st.radio('Type', ['Leaderboard', 'Benchmarks'])
@@ -1069,12 +1075,12 @@ def records():
 
         with col12:
             if typ == 'Benchmarks':
-                stat1 = st.selectbox('Stat', ['Pass Yds', 'Pass TDs', 'Rush Yds', 'YPC', 'Rush TDs', 'Rec Yds', 'Rec TDs', 'Tackles', 'TFLs', 'Sacks', 'Ints', 'FFs'])
+                stat1 = st.selectbox('Stat', ['Pass Yds', 'Pass TDs', 'Rushes', 'Rush Yds', 'Rush TDs', 'Rec', 'Rec Yds', 'Rec TDs', 'Tackles', 'TFLs', 'Sacks', 'Ints', 'FFs'])
 
                 if num_stat == True:
-                    stat2 = st.selectbox('Stat 2', ['Pass Yds', 'Pass TDs', 'Rush Yds', 'YPC', 'Rush TDs', 'Rec Yds', 'Rec TDs', 'Tackles', 'TFLs', 'Sacks', 'Ints', 'FFs'])
+                    stat2 = st.selectbox('Stat 2', ['Pass Yds', 'Pass TDs', 'Rushes', 'Rush Yds', 'Rush TDs', 'Rec', 'Rec Yds', 'Rec TDs', 'Tackles', 'TFLs', 'Sacks', 'Ints', 'FFs'])
             else:
-                stat_lead = st.selectbox('Stat', ['Pass Yds', 'Pass TDs', 'Rush Yds', 'YPC', 'Rush TDs', 'Rec Yds', 'Rec TDs', 'Tackles', 'TFLs', 'Sacks', 'Ints', 'FFs'])
+                stat_lead = st.selectbox('Stat', ['Pass Yds', 'Pass TDs', 'Rushes', 'Rush Yds', 'Rush TDs', 'Rec', 'Rec Yds', 'Rec TDs', 'Tackles', 'TFLs', 'Sacks', 'Ints', 'FFs'])
 
         with col13:
             if typ == 'Benchmarks':
@@ -1082,21 +1088,106 @@ def records():
 
                 if num_stat == True:
                     stat_min2 = st.number_input('Stat 2 Minimum', value = 0)
-            else:
-                stat_lead = st.selectbox('Stat', ['Pass Yds', 'Pass TDs', 'Rush Yds', 'YPC', 'Rush TDs', 'Rec Yds', 'Rec TDs', 'Tackles', 'TFLs', 'Sacks', 'Ints', 'FFs'])
+    
+    stat_dict = {
+        'Null': 'Placehold',
+        'Pass Yds': 'Pass Yards',
+        'Pass TDs': 'Passing TDs',
+        'Rushes': 'Rush Attempts',
+        'Rush Yds': 'Net Rush Yards',
+        'Rush TDs': 'Rushing TDs',
+        'Rec': 'Catches',
+        'Rec Yds': 'Receiving Yards',
+        'Rec TDs': 'Receiving TDs',
+        'Tackles': 'Tot', # Assuming 'Tot' represents Total Tackles (Solo + Assisted)
+        'TFLs': 'TFL', # TFL stands for Tackles For Loss
+        'Sacks': 'Sack',
+        'Ints': 'Int', # Interceptions
+        'FFs': 'FF' # Forced Fumbles
+    }
 
+    stat1 = stat_dict[stat1]
+    stat2 = stat_dict[stat2]
+    stat_lead = stat_dict[stat_lead]
 
-
-
-
-
+    ## team / player
     if cat == 'Team':
         temp_df = master_merged[master_merged['Last Name'] == 'Game']
     else:
         temp_df = master_merged[master_merged['Last Name'] != 'Game']
-                
+        temp_df['Name'] = temp_df['First Name'] + ' ' + temp_df['Last Name']
+
+    temp_df['Result'] = np.where(
+        temp_df['Home Team'] == 'texas',
+        temp_df['Score'] + ' vs ' + temp_df['Opponent'],
+        temp_df['Score'] + ' at ' + temp_df['Opponent']
+    )
+
+    ## leaderboard
+    if typ == 'Leaderboard':
+        if cat == 'Player':
+            if dem == 'Game':
+                temp_df = temp_df[['Name', stat_lead, 'Date', 'Result']].sort_values(by = stat_lead, ascending=False).reset_index(drop = True)
+            elif dem == 'Season':
+                temp_df = temp_df.groupby(['PlayerID', 'Name', 'Season']).sum().reset_index()
+                temp_df = temp_df[['Name', stat_lead, 'Season']].sort_values(by = stat_lead, ascending=False).reset_index(drop = True)
+                temp_df['Season'] = temp_df['Season'].astype(str)
+            elif dem == 'Career':
+                temp_df = temp_df.groupby(['PlayerID', 'Name']).sum().reset_index()
+                temp_df = temp_df[['Name', stat_lead]].sort_values(by = stat_lead, ascending=False).reset_index(drop = True)
+        elif cat == 'Team':
+            if dem == 'Game':
+                temp_df = temp_df[['Result', stat_lead, 'Date']].sort_values(by = stat_lead, ascending=False).reset_index(drop = True)
+            elif dem == 'Season':
+                temp_df = temp_df.groupby(['Season']).sum().reset_index()
+                temp_df = temp_df[['Season', stat_lead]].sort_values(by = stat_lead, ascending=False).reset_index(drop = True)
+                temp_df['Season'] = temp_df['Season'].astype(str)
+
+        temp_df.index += 1
+
+    elif typ == 'Benchmarks':
+        if typ2 == 'Total':            
+            if dem == 'Game':
+                temp_df = temp_df[temp_df[stat1] >= stat_min1]
+                if stat_min2:
+                    temp_df = temp_df[temp_df[stat2] >= stat_min2]
+
+                if cat == 'Player':
+                    counts = temp_df.groupby(['Name', 'PlayerID', 'First Year', 'Last Year']).size().reset_index(name='Occurrences').sort_values(by='Occurrences', ascending=False).reset_index(drop=True)
+                    counts['Time'] = counts['First Year'].astype(int).astype(str) + ' - ' + counts['Last Year'].astype(int).astype(str)
+                    counts = counts[['Name', 'Occurrences', 'Time']]
+                elif cat == 'Team':
+                    ## this really doesn't make much sense functionally
+                    counts = temp_df.groupby(['Last Name']).size().reset_index(name='Occurrences').sort_values(by='Occurrences', ascending=False).reset_index(drop=True)
+                    counts = counts[['Occurrences']]
+
+            if dem == 'Season':              
+                if cat == 'Player':
+                    temp_df = temp_df.groupby(['Name', 'PlayerID', 'First Year', 'Last Year', 'Season']).sum()
+                    temp_df = temp_df[temp_df[stat1] >= stat_min1]
+                    if stat_min2:
+                        temp_df = temp_df[temp_df[stat2] >= stat_min2]
+
+                    counts = temp_df.groupby(['Name', 'PlayerID', 'First Year', 'Last Year']).size().reset_index(name='Occurrences').sort_values(by='Occurrences', ascending=False).reset_index(drop=True)
+                    counts['Time'] = counts['First Year'].astype(int).astype(str) + ' - ' + counts['Last Year'].astype(int).astype(str)
+                    counts = counts[['Name', 'Occurrences', 'Time']]
+                elif cat == 'Team':
+                    temp_df = temp_df.groupby(['Last Name', 'Season']).sum()
+                    temp_df = temp_df[temp_df[stat1] >= stat_min1]
+                    if stat_min2:
+                        temp_df = temp_df[temp_df[stat2] >= stat_min2]
+                    
+                    ## this really doesn't make much sense functionally either
+                    counts = temp_df.groupby(['Last Name']).size().reset_index(name='Occurrences').sort_values(by='Occurrences', ascending=False).reset_index(drop=True)
+                    counts = counts[['Occurrences']]
+        counts.index += 1
+
     with col2:
-        pass
+        if typ == 'Benchmarks':
+            st.dataframe(counts)
+        else:
+            st.dataframe(temp_df)
+                
 
 def bowmer():
     st.title("Bowmer")
