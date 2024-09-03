@@ -1060,7 +1060,7 @@ def records():
                 
                 if typ == 'Benchmarks':
                     dem = st.radio('Event', ['Game', 'Season'])
-                    typ2 = st.radio('Benchmark Type', ['Consecutive', 'Total'])
+                    typ2 = st.radio('Benchmark Type', ['Total', 'Consecutive'])
                     num_stat = st.checkbox('Add second stat?')
                 else:
                     dem = st.radio('Event', ['Game', 'Season', 'Career'])
