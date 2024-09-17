@@ -1187,10 +1187,16 @@ def records():
             st.dataframe(counts)
         else:
             st.dataframe(temp_df)
+
+        st.caption("Access the official records here: https://texaslonghorns.com/sports/2013/7/17/FB_0717132606.aspx")
                 
 
 def bowmer():
     st.title("Bowmer")
+
+    st.dataframe(master_defense[(master_defense['First Name'].isna()) & 
+                                (master_defense['Last Name'] != 'Game') & 
+                                (master_defense['Last Name'] != 'TEAM')])
     # also include other finds like the high sack game or the onlyfans links
 
 # Dictionary of pages
