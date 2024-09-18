@@ -1049,7 +1049,7 @@ def records():
     stat_min2 = None
 
     with col1:
-        st.caption('Select categories you wish to search.')
+        st.caption('Select categories you wish to search. Stats tracking begins at 1954. Note: Bowl stats are included by default')
 
         col11, col12, col13 = st.columns([3,2,2])
 
