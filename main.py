@@ -1049,7 +1049,7 @@ def records():
     stat_min2 = None
 
     with col1:
-        st.caption('Select categories you wish to search. Stats tracking begins at 1954. Note: Bowl stats are included by default')
+        st.caption('Select categories you wish to search.')
 
         col11, col12, col13 = st.columns([3,2,2])
 
@@ -1188,7 +1188,8 @@ def records():
         else:
             st.dataframe(temp_df)
 
-        st.caption("Access the official records here: https://texaslonghorns.com/sports/2013/7/17/FB_0717132606.aspx")
+        st.caption("Stat tracking begins at 1954. Note: Bowl stats are included by default.")
+        st.caption("Access the official records here: \nhttps://texaslonghorns.com/sports/2013/7/17/FB_0717132606.aspx")
                 
 
 def bowmer():
