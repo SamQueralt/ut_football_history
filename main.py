@@ -611,7 +611,7 @@ def home():
 
     with col_1:
         st.text('')
-        st.markdown("**Hello! My name is Sam Queralt.** Texas football's stats are all digitized, but not easily accessible. They're all in different places, and they can't be searched or filtered. I scraped the web and put together a database of all the Texas box scores I have access to. These are taken directly from Texas Football’s “All-Time Results” page, not ESPN or Sports Reference. This is not affiliated with UT, and there are surely errors throughout the data (especially around 2009, when they changed the format). Please contact @sam_queralt on Twitter if you find anything that needs fixing. Also tag me if you use this tool to find a stat! I'm curious what quirks there are to find. Happy searching!")
+        st.markdown("**Hello! My name is Sam Queralt.** Texas football's stats are all digitized, but not easily accessible. They're all in different places, and they can't be searched or filtered. I scraped the web and put together a database of all the Texas box scores I have access to. These are taken directly from Texas Football’s “All-Time Results” page, not ESPN or Sports Reference. This is not affiliated with UT, and there are surely errors throughout the data (especially around 2009, when they changed the format). Please contact @sam_queralt on Twitter if you find anything that needs fixing. Also tag me if you use this tool to find a stat! I'm curious what quirks there are to find (see The Bowmer Mystery). Happy searching!")
 
         st.markdown("*Updated through 2023-2024 Season*")
 
