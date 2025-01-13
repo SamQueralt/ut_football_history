@@ -1221,8 +1221,6 @@ st.sidebar.caption("Please report any errors to @sam_queralt on Twitter.")
 page = PAGES[selection]
 page()
 
-
-
 ##  def main():
 ##      st.title("Main Page")
 ##      st.write("Welcome to the main page!")
