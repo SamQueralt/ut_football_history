@@ -171,10 +171,6 @@ def main():
         st.download_button('Download Filtered Data (CSV)', data = filtered_stats.to_csv(index = False), file_name = "texas_fb_history_filtered.csv", key = 'download_filtered')
 
     st.text('Note: Some players names have typos in the official stat sheets and may not show up in name based queries.')
-    st.text('Also, stats have not been rigorously validated, so this is an UNOFFICIAL data set.')
-    st.text('All the stats here should be accurate, but I could be missing some games it\'s hard to be 100% sure')
-    st.text('Stats will not be updated until the most recent season is posted at this link: https://texassports.com/sports/2013/7/21/FB_0721134841.aspx')
-    st.text('Defensive stats are on the way. Prepare for some weird names because the early box score pages cut them off for spacing reasons.')
     
 def offense():
     col1, col2 = st.columns([2,7])
@@ -282,6 +278,8 @@ def offense():
             st.caption('Note some discrepancies in the receiving/passing stats. This is not my fault! Here is a list of games with misinputted data:')
             st.caption('Rice 1948, Alabama 1960, Oregon State 1980, Oklahoma 1980, UNC 1982, TCU 1989, Louisville 1994, Baylor 1994, Nebraska 1996')
             st.caption('Download the game log to see all available columns. If you want to download the full box score data (not just team stats), visit the home page.')
+            st.caption('Please note that some players\' names are misinputted in the stats, so they show up fractured in the data (see Marquise Goodwin).')
+
     with col2:
         if option == 0:
             st.title('Texas Football Offensive History')
@@ -613,19 +611,66 @@ def home():
 
     with col_1:
         st.text('')
-        st.markdown("**Hello! My name is Sam Queralt.** Texas football's stats are all digitized, but not easily accessible. They're all in different places, and they can't be searched or filtered. I'm not great at coding, but I know enough about web scraping to put together a database of all the Texas box scores I have access to. This is not affiliated with UT, and there are surely errors littered throughout the database. Please contact @sam_queralt on Twitter if you find anything that needs fixing. Also tag me if you use this tool to find a stat! I'm curious what quirks there are to find (see the Bowmer mystery). Happy searching!")
+        st.markdown("**Hello! My name is Sam Queralt.** Texas football's stats are all digitized, but not easily accessible. They're all in different places, and they can't be searched or filtered. I scraped the web and put together a database of all the Texas box scores I have access to. These are taken directly from Texas Football’s “All-Time Results” page, not ESPN or Sports Reference. This is not affiliated with UT, and there are surely errors throughout the data (especially around 2009, when they changed the format). Please contact @sam_queralt on Twitter if you find anything that needs fixing. Also tag me if you use this tool to find a stat! I'm curious what quirks there are to find. Happy searching!")
+
+        st.markdown("*Updated through 2023-2024 Season*")
 
     with col_3:
         st.text('')
         st.text('')
-        st.text('')
         st.subheader('Quick Download')
 
-        # master_defense.rename(columns={'##',Last Name,First Name,Solo,Ast,Tot,TFL,tfl_yds,FF,FR,fr_yd,Int,int_yds,BrUp,Blkd,Sack,sack_yds,QH,GameID,Date,Home Team,Away Team,Home Score,Away Score,Texas Result,Link,Season,fr_yds,Year,PlayerID,NameConcat,First Year,Last Year,Opponent,Score},
-        #     inplace=True)
+        master_merged_dl = master_merged[['First Name', 'Last Name', 'Completions', 'Pass Attempts',
+       'Interceptions', 'Pass Yards', 'Passing TDs', 'Longest Pass',
+       'Sacks Taken', 'Rush Attempts', 'Rush Yards Gained', 'Rush Yards Lost',
+       'Net Rush Yards', 'Rushing TDs', 'Longest Rush', 'Yards Per Rush',
+       'Catches', 'Receiving Yards', 'Receiving TDs', 'Longest Reception',
+       'GameID', 'Link', 'Date', 'Home Team', 'Away Team', 'Home Score',
+       'Away Score', 'Texas Result', 'Season', 'Total Yards', 'Total TDs',
+       '##', 'Solo', 'Ast', 'Tot', 'TFL', 'tfl_yds', 'FF', 'FR', 'fr_yds',
+       'Int', 'int_yds', 'BrUp', 'Blkd', 'Sack', 'sack_yds', 'QH', 'Year',
+       'PlayerID', 'First Year', 'Last Year', 'Opponent',
+       'Score']]
+        master_merged_dl.rename(columns = {'tfl_yds' : 'TFL Yards',
+                                           'fr_yards' : 'FR Yards',
+                                           'int_yds' : 'Int Yards',
+                                           'sack_yds' : 'Sack Yards'})
+        
+        master_defense_dl = master_defense[['##', 'Last Name', 'First Name', 'Solo', 'Ast', 'Tot', 'TFL', 'tfl_yds',
+       'FF', 'FR', 'fr_yds', 'Int', 'int_yds', 'BrUp', 'Blkd', 'Sack',
+       'sack_yds', 'QH', 'GameID', 'Date', 'Home Team', 'Away Team',
+       'Home Score', 'Away Score', 'Texas Result', 'Link', 'Season', 'Year',
+       'PlayerID', 'First Year', 'Last Year', 'Opponent',
+       'Score']]
+        master_defense_dl.rename(columns = {'tfl_yds' : 'TFL Yards',
+                                           'fr_yards' : 'FR Yards',
+                                           'int_yds' : 'Int Yards',
+                                           'sack_yds' : 'Sack Yards'})
 
+        master_offense_dl = master_offense[['First Name', 'Last Name', 'Completions', 'Pass Attempts',
+       'Interceptions', 'Pass Yards', 'Passing TDs', 'Longest Pass',
+       'Sacks Taken', 'Rush Attempts', 'Rush Yards Gained', 'Rush Yards Lost',
+       'Net Rush Yards', 'Rushing TDs', 'Longest Rush', 'Yards Per Rush',
+       'Catches', 'Receiving Yards', 'Receiving TDs', 'Longest Reception',
+       'GameID', 'Link', 'Date', 'Home Team', 'Away Team', 'Home Score',
+       'Away Score', 'Texas Result', 'Season', 'Total Yards', 'Total TDs',
+       'Year', 'PlayerID', 'First Year', 'Last Year', 'Opponent',
+       'Score']]
 
-        # st.download_button("")
+        st.download_button(label = "Full Data Download (8.5 MB)", 
+                           data = master_merged_dl.to_csv(index=False),
+                           file_name = "full_history.csv",
+                           mime = 'text/csv')
+        
+        st.download_button(label = "Offensive Data Download (2.8 MB)", 
+                           data = master_offense_dl.to_csv(index=False),
+                           file_name = "offensive_history.csv",
+                           mime = 'text/csv')
+        
+        st.download_button(label = "Defensive Data Download (4.4 MB)", 
+                           data = master_defense_dl.to_csv(index=False),
+                           file_name = "defensive_history.csv",
+                           mime = 'text/csv')
 
 def defense(): 
     col1, col2 = st.columns([2,7])
@@ -751,6 +796,8 @@ def defense():
             
             st.caption('I think there is some tackling inflation going on (maybe with adding assisted and solo tackles, creating duplicates). A few of these games seem like quite the feat if the stats are telling the truth. See Boston College and Virginia in back to back games in 1977.')
             st.caption('Download the game log to see the yards associated with sacks, TFLs, interceptions, and fumble recoveries. If you want to download the full box score data (not just team stats), visit the home page.')
+            st.caption('Please note that some players\' names are misinputted in the stats, so they show up fractured in the data (see DeMarvion Overshown).')
+
     with col2:
         if option == 0:
             st.title('Texas Football Defensive History')
@@ -1060,7 +1107,8 @@ def records():
                 
                 if typ == 'Benchmarks':
                     dem = st.radio('Event', ['Game', 'Season'])
-                    typ2 = st.radio('Benchmark Type', ['Total', 'Consecutive'])
+                    # typ2 = st.radio('Benchmark Type', ['Total', 'Consecutive'])                    
+                    typ2 = 'Total' # Change this when adding consecutive functionality
                     num_stat = st.checkbox('Add second stat?')
                 else:
                     dem = st.radio('Event', ['Game', 'Season', 'Career'])
@@ -1070,7 +1118,8 @@ def records():
                 dem = st.radio('Event', ['Game', 'Season'])
 
                 if typ == 'Benchmarks':
-                    typ2 = st.radio('Benchmark Type', ['Total', 'Consecutive'])    
+                    # typ2 = st.radio('Benchmark Type', ['Total', 'Consecutive'])    
+                    typ2 = 'Total' # Change this when adding consecutive functionality
                     num_stat = st.checkbox('Add second stat?')
 
         with col12:
@@ -1099,11 +1148,11 @@ def records():
         'Rec': 'Catches',
         'Rec Yds': 'Receiving Yards',
         'Rec TDs': 'Receiving TDs',
-        'Tackles': 'Tot', # Assuming 'Tot' represents Total Tackles (Solo + Assisted)
-        'TFLs': 'TFL', # TFL stands for Tackles For Loss
+        'Tackles': 'Tot', 
+        'TFLs': 'TFL', 
         'Sacks': 'Sack',
-        'Ints': 'Int', # Interceptions
-        'FFs': 'FF' # Forced Fumbles
+        'Ints': 'Int', 
+        'FFs': 'FF' 
     }
 
     stat1 = stat_dict[stat1]
@@ -1195,9 +1244,10 @@ def records():
 def bowmer():
     st.title("Bowmer")
 
-    st.dataframe(master_defense[(master_defense['First Name'].isna()) & 
-                                (master_defense['Last Name'] != 'Game') & 
-                                (master_defense['Last Name'] != 'TEAM')])
+    st.markdown("There are a few instances in the data where a player is mistakenly entered with only one name. Most of them are insignificant, but one stands out. On October 2nd, 1954, Texas hosted Washington State. Texas won 40-14 in a game that was largely unremarkable aside from a blocked kick. However, if you look closely, there is a player with no first name. His name is Bowmer.")
+    st.markdown("From what I can tell, Bowmer had the most insignificant career in college football history. On this random Saturday in 1954, Bowmer recorded three stats. He punted the ball once for 38 yards, he returned a kickoff for 14 yards, and he carried the ball twice for an unbelievable -19 yards. It is unexplainable to me how one would accrue this collection of stats. Even more interesting, this was the only game he ever appeared in. In fact, I couldn’t even find evidence of his existence outside of this football game. The only thing left of Bowmer’s legacy is a single row in this data set.")
+    st.markdown("Bowmer is an anomaly. He defies every logical explanation that the sport of football could provide. He is one, singular nightmarish row in the data that has as much significance as it has first name. But, in a way, Bowmer is a light for all of us. He shows that no matter how hard you try to be forgotten, someone will remember. No matter how unremarkable you are, your legacy will live on long after you are gone. To me, Bowmer is neither a joke nor a failure; he is hope. Appearing in this football game could have been his life’s goal, and thus he represents the manifestation of dreams, even when reality knocks you down for a 19 yard loss. Bowmer is a painful exemplification of the human spirit, and what could be more remarkable than that?")
+    st.markdown("For all this, he has been affectionately and deservedly nicknamed “My Main Man Bowmer” in the data. ")
     # also include other finds like the high sack game or the onlyfans links
 
 # Dictionary of pages
