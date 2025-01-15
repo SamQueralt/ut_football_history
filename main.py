@@ -1242,7 +1242,7 @@ def records():
                 
 
 def stories():
-    st.title("Bowmer")
+    st.title("Stories")
 
     # st.markdown("There are a few instances in the data where a player is mistakenly entered with only one name. Most of them are insignificant, but one stands out. On October 2nd, 1954, Washington State traveled to Austin. Texas won 40-14 in a game that was largely unremarkable aside from a blocked kick. However, if you look closely, there is a player with no first name. His name is Bowmer.")
     # st.markdown("From what I can tell, Bowmer had the most insignificant career in college football history. On this random Saturday in 1954, Bowmer recorded three stats. He punted the ball once for 38 yards, he returned a kickoff for 14 yards, and he carried the ball twice for an unbelievable -19 yards. It is unexplainable to me how one would accrue this collection of stats. Even more interesting, this was the only game he ever appeared in. In fact, I couldn’t even find evidence of his existence outside of this football game. The only thing left of Bowmer’s legacy is a single row in this data set.")
